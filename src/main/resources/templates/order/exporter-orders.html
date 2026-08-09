@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Received Orders | RPR Trades</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: #f5f7fb; }
+        .page-header {
+            background: linear-gradient(135deg, #fd7e14, #ffc107);
+            color: #fff; padding: 28px 32px; border-radius: 18px; margin-bottom: 24px;
+        }
+        .stat-box {
+            background: #fff; border-radius: 14px; padding: 20px 24px;
+            box-shadow: 0 6px 18px rgba(0,0,0,.07); text-align: center;
+        }
+        .stat-box h3 { font-weight: 700; font-size: 28px; margin: 0; }
+        .table-card { border: none; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+        .table td, .table th { vertical-align: middle; padding: 13px 16px; }
+        .table thead { background: #fff8f0; }
+    </style>
+</head>
+<body>
+<div class="container-fluid py-4 px-4">
+
+    <!-- Header -->
+    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="mb-1"><i class="bi bi-cart-check-fill me-2"></i>Received Orders</h3>
+            <p class="mb-0 opacity-90">Orders placed by importers for your products.</p>
+        </div>
+        <a th:href="@{/dashboard/exporter}" class="btn btn-dark fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i>Dashboard
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="stat-box">
+            <p class="text-muted mb-1 small">Total Orders</p>
+            <h3 id="totalOrders" class="text-primary">0</h3>
+        </div></div>
+        <div class="col-md-3"><div class="stat-box">
+            <p class="text-muted mb-1 small">Pending</p>
+            <h3 id="pendingOrders" class="text-warning">0</h3>
+        </div></div>
+        <div class="col-md-3"><div class="stat-box">
+            <p class="text-muted mb-1 small">Approved</p>
+            <h3 id="approvedOrders" class="text-success">0</h3>
+        </div></div>
+        <div class="col-md-3"><div class="stat-box">
+            <p class="text-muted mb-1 small">Rejected</p>
+            <h3 id="rejectedOrders" class="text-danger">0</h3>
+        </div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-5">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by order ID or importer name…">
+                </div>
+                <div class="col-lg-3">
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="REJECTED">Rejected</option>
+                        <option value="SHIPPED">Shipped</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-warning fw-semibold" onclick="applyFilter()">
+                        <i class="bi bi-search me-1"></i>Search
+                    </button>
+                </div>
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-outline-secondary" onclick="resetFilter()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card table-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th><th>Importer</th><th>Product</th>
+                            <th>Qty</th><th>Total</th><th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTable">
+                        <tr><td colspan="7" class="text-center py-5">
+                            <div class="spinner-border text-warning"></div>
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="emptyState" class="text-center py-5" style="display:none;">
+        <i class="bi bi-inbox display-1 text-secondary"></i>
+        <h4 class="mt-3">No Orders Yet</h4>
+        <p class="text-muted">Orders from importers will appear here once placed.</p>
+    </div>
+
+    <footer class="text-center mt-5 pt-3 border-top">
+        <small class="text-muted">© 2026 RPR Trades | Exporter Module</small>
+    </footer>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bi bi-cart-check me-2"></i>Order Details</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered mb-0">
+                    <tr><th width="40%">Order ID</th><td id="mOrderId"></td></tr>
+                    <tr><th>Importer</th><td id="mImporter"></td></tr>
+                    <tr><th>Product</th><td id="mProduct"></td></tr>
+                    <tr><th>Quantity</th><td id="mQty"></td></tr>
+                    <tr><th>Total Amount</th><td id="mTotal"></td></tr>
+                    <tr><th>Status</th><td id="mStatus"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-success" id="modalApproveBtn" onclick="approveSelected()">
+                    <i class="bi bi-check-lg me-1"></i>Approve
+                </button>
+                <button class="btn btn-danger" id="modalRejectBtn" onclick="rejectSelected()">
+                    <i class="bi bi-x-lg me-1"></i>Reject
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/toast.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/auth-guard.js}"></script>
+<script>
+const API        = "/api";
+const token      = sessionStorage.getItem("token");
+const exporterId = sessionStorage.getItem("userId");
+const headers    = { "Authorization": "Bearer " + token, "Content-Type": "application/json" };
+
+let allOrders   = [];
+let selectedOrderId = null;
+
+function statusBadge(s) {
+    const c = { PENDING:"warning text-dark", APPROVED:"success", REJECTED:"danger", SHIPPED:"info" };
+    return `<span class="badge bg-${c[s]||"secondary"}">${s}</span>`;
+}
+
+async function loadOrders() {
+    try {
+        const r = await fetch(`${API}/orders/exporter/${exporterId}`, { headers });
+        if (!r.ok) throw new Error(await r.text());
+        allOrders = await r.json();
+        updateStats(allOrders);
+        renderTable(allOrders);
+    } catch(e) {
+        document.getElementById("orderTable").innerHTML =
+            `<tr><td colspan="7" class="text-center text-danger py-4">${e.message}</td></tr>`;
+    }
+}
+
+function updateStats(data) {
+    document.getElementById("totalOrders").textContent    = data.length;
+    document.getElementById("pendingOrders").textContent  = data.filter(o=>o.status==="PENDING").length;
+    document.getElementById("approvedOrders").textContent = data.filter(o=>o.status==="APPROVED").length;
+    document.getElementById("rejectedOrders").textContent = data.filter(o=>o.status==="REJECTED").length;
+}
+
+function renderTable(list) {
+    const tb = document.getElementById("orderTable");
+    const es = document.getElementById("emptyState");
+    tb.innerHTML = "";
+    if (!list.length) { es.style.display="block"; return; }
+    es.style.display = "none";
+    list.forEach(o => {
+        const isPending = o.status === "PENDING";
+        tb.innerHTML += `
+        <tr>
+            <td><strong>#${o.orderId}</strong></td>
+            <td>${o.importer?.name||"-"}</td>
+            <td>${o.product?.productName||"-"}</td>
+            <td>${o.quantity}</td>
+            <td class="fw-semibold text-success">₹ ${o.totalAmount}</td>
+            <td>${statusBadge(o.status)}</td>
+            <td class="text-center">
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="viewOrder(${o.orderId})" title="Details">
+                    <i class="bi bi-eye"></i>
+                </button>
+                ${isPending ? `
+                <button class="btn btn-sm btn-success me-1" onclick="approveOrder(${o.orderId})" title="Approve">
+                    <i class="bi bi-check-lg"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="rejectOrder(${o.orderId})" title="Reject">
+                    <i class="bi bi-x-lg"></i>
+                </button>` : ""}
+            </td>
+        </tr>`;
+    });
+}
+
+function viewOrder(id) {
+    const o = allOrders.find(x => x.orderId === id);
+    if (!o) return;
+    selectedOrderId = id;
+    document.getElementById("mOrderId").textContent  = "#" + o.orderId;
+    document.getElementById("mImporter").textContent = o.importer?.name || "-";
+    document.getElementById("mProduct").textContent  = o.product?.productName || "-";
+    document.getElementById("mQty").textContent      = o.quantity;
+    document.getElementById("mTotal").textContent    = "₹ " + o.totalAmount;
+    document.getElementById("mStatus").innerHTML     = statusBadge(o.status);
+    const isPending = o.status === "PENDING";
+    document.getElementById("modalApproveBtn").style.display = isPending ? "" : "none";
+    document.getElementById("modalRejectBtn").style.display  = isPending ? "" : "none";
+    new bootstrap.Modal(document.getElementById("orderModal")).show();
+}
+
+async function approveOrder(id) {
+    Toast.confirm(`Approve order #${id}? The importer will be notified to make payment.`, async () => {
+        const r = await fetch(`${API}/orders/approve/${id}`, { method:"PUT", headers });
+        if (r.ok) { Toast.show("Order #"+id+" approved!", "success"); loadOrders(); }
+        else Toast.show(await r.text(), "danger");
+    }, null, { confirmText: "Approve", title: "Approve Order" });
+}
+
+async function rejectOrder(id) {
+    Toast.confirm(`Reject order #${id}? This cannot be undone.`, async () => {
+        const r = await fetch(`${API}/orders/reject/${id}`, { method:"PUT", headers });
+        if (r.ok) { Toast.show("Order #"+id+" rejected.", "warning"); loadOrders(); }
+        else Toast.show(await r.text(), "danger");
+    }, null, { confirmText: "Reject", title: "Reject Order" });
+}
+
+function approveSelected() {
+    if (selectedOrderId) {
+        bootstrap.Modal.getInstance(document.getElementById("orderModal")).hide();
+        approveOrder(selectedOrderId);
+    }
+}
+
+function rejectSelected() {
+    if (selectedOrderId) {
+        bootstrap.Modal.getInstance(document.getElementById("orderModal")).hide();
+        rejectOrder(selectedOrderId);
+    }
+}
+
+function applyFilter() {
+    const kw = document.getElementById("searchInput").value.toLowerCase().trim();
+    const st = document.getElementById("statusFilter").value;
+    renderTable(allOrders.filter(o =>
+        (!kw || String(o.orderId).includes(kw) || (o.importer?.name||"").toLowerCase().includes(kw) ||
+                (o.product?.productName||"").toLowerCase().includes(kw)) &&
+        (!st || o.status === st)
+    ));
+}
+
+function resetFilter() {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("statusFilter").value = "";
+    renderTable(allOrders);
+}
+
+document.getElementById("searchInput").addEventListener("keyup", applyFilter);
+document.getElementById("statusFilter").addEventListener("change", applyFilter);
+
+function showToast(msg, type="success") { Toast.show(msg, type); }
+
+loadOrders();
+</script>
+</body>
+</html>

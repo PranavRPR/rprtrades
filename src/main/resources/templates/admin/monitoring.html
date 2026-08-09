@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Monitoring | RPR Trades</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: #f5f7fb; }
+        .page-header {
+            background: linear-gradient(135deg, #212529, #495057);
+            color: #fff; padding: 28px 32px; border-radius: 18px; margin-bottom: 24px;
+        }
+        .monitor-card {
+            border: none; border-radius: 14px; box-shadow: 0 6px 18px rgba(0,0,0,.07);
+        }
+        .monitor-card .card-header {
+            background: #fff; border-bottom: 1px solid #eee; font-weight: 600;
+        }
+        .health-indicator {
+            width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+        }
+        .health-ok { background: #198754; }
+        .health-warn { background: #ffc107; }
+        .health-danger { background: #dc3545; }
+        .metric-box {
+            background: #fff; border-radius: 12px; padding: 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.05); text-align: center;
+        }
+        .metric-box h3 { font-weight: 700; margin: 0; }
+        .metric-box p { color: #6c757d; margin: 0; font-size: 13px; }
+        .security-badge { font-size: 12px; padding: 5px 12px; border-radius: 20px; font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="container-fluid py-4 px-4">
+
+    <!-- Header -->
+    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="mb-1"><i class="bi bi-shield-check me-2"></i>System Monitoring & Security</h3>
+            <p class="mb-0 opacity-75">Monitor system health, security status and platform activity.</p>
+        </div>
+        <a th:href="@{/dashboard/admin}" class="btn btn-light fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i>Dashboard
+        </a>
+    </div>
+
+    <!-- System Health -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="metric-box">
+            <h3 class="text-success"><span class="health-indicator health-ok me-1"></span>Healthy</h3>
+            <p>System Status</p>
+        </div></div>
+        <div class="col-md-3"><div class="metric-box">
+            <h3 class="text-primary" id="totalUsers">0</h3>
+            <p>Registered Users</p>
+        </div></div>
+        <div class="col-md-3"><div class="metric-box">
+            <h3 class="text-warning" id="totalProducts">0</h3>
+            <p>Total Products</p>
+        </div></div>
+        <div class="col-md-3"><div class="metric-box">
+            <h3 class="text-danger" id="totalOrders">0</h3>
+            <p>Total Orders</p>
+        </div></div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="metric-box">
+            <h3 class="text-info" id="totalPayments">0</h3>
+            <p>Payments</p>
+        </div></div>
+        <div class="col-md-3"><div class="metric-box">
+            <h3 class="text-primary" id="totalShipments">0</h3>
+            <p>Shipments</p>
+        </div></div>
+        <div class="col-md-3"><div class="metric-box">
+            <h3 class="text-success" id="totalDocuments">0</h3>
+            <p>Documents</p>
+        </div></div>
+        <div class="col-md-3"><div class="metric-box">
+            <h3 class="text-danger" id="totalInvoices">0</h3>
+            <p>Invoices</p>
+        </div></div>
+    </div>
+
+    <div class="row">
+        <!-- Security Status -->
+        <div class="col-lg-6 mb-4">
+            <div class="card monitor-card">
+                <div class="card-header">
+                    <i class="bi bi-shield-lock-fill text-success me-2"></i>Security Status
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <td><i class="bi bi-key-fill text-primary me-2"></i>JWT Authentication</td>
+                                <td><span class="badge bg-success security-badge">ENABLED</span></td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-lock-fill text-warning me-2"></i>Password Encryption</td>
+                                <td><span class="badge bg-success security-badge">BCRYPT</span></td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-person-check-fill text-info me-2"></i>Role-Based Access</td>
+                                <td><span class="badge bg-success security-badge">ACTIVE</span></td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-shield-fill text-danger me-2"></i>API Protection</td>
+                                <td><span class="badge bg-success security-badge">SECURED</span></td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-people-fill text-secondary me-2"></i>Disabled Accounts</td>
+                                <td><span class="badge bg-danger security-badge" id="disabledUsers">0</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Distribution -->
+        <div class="col-lg-6 mb-4">
+            <div class="card monitor-card">
+                <div class="card-header">
+                    <i class="bi bi-people-fill text-primary me-2"></i>User Role Distribution
+                </div>
+                <div class="card-body">
+                    <div class="row text-center g-3">
+                        <div class="col-4">
+                            <div class="p-3 rounded bg-primary bg-opacity-10">
+                                <h3 class="text-primary mb-0" id="adminCount">0</h3>
+                                <small class="text-muted">Admins</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 rounded bg-success bg-opacity-10">
+                                <h3 class="text-success mb-0" id="importerCount">0</h3>
+                                <small class="text-muted">Importers</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 rounded bg-warning bg-opacity-10">
+                                <h3 class="text-warning mb-0" id="exporterCount">0</h3>
+                                <small class="text-muted">Exporters</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="card monitor-card">
+        <div class="card-header">
+            <i class="bi bi-activity me-2"></i>Recent Platform Activity
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Module</th><th>Total Records</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="bi bi-cart3 text-primary me-2"></i>Orders</td>
+                            <td id="tblOrders">0</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-box-seam text-warning me-2"></i>Products</td>
+                            <td id="tblProducts">0</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-credit-card text-info me-2"></i>Payments</td>
+                            <td id="tblPayments">0</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-truck text-danger me-2"></i>Shipments</td>
+                            <td id="tblShipments">0</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-file-earmark-text text-success me-2"></i>Documents</td>
+                            <td id="tblDocuments">0</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-receipt text-danger me-2"></i>Invoices</td>
+                            <td id="tblInvoices">0</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center mt-5 pt-3 border-top">
+        <small class="text-muted">© 2026 RPR Trades | System Monitoring</small>
+    </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/toast.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/auth-guard.js}"></script>
+<script>
+const API = "/api";
+const token = sessionStorage.getItem("token");
+const headers = { "Authorization": "Bearer " + token, "Content-Type": "application/json" };
+
+async function loadMonitoring() {
+    try {
+        // Load users
+        const usersRes = await fetch(API + "/users", { headers });
+        const users = await usersRes.json();
+        document.getElementById("totalUsers").textContent = users.length;
+        document.getElementById("adminCount").textContent = users.filter(u => u.role === "ADMIN").length;
+        document.getElementById("importerCount").textContent = users.filter(u => u.role === "IMPORTER").length;
+        document.getElementById("exporterCount").textContent = users.filter(u => u.role === "EXPORTER").length;
+        document.getElementById("disabledUsers").textContent = users.filter(u => u.enabled === false).length;
+
+        // Load products
+        const productsRes = await fetch(API + "/products", { headers });
+        const products = await productsRes.json();
+        document.getElementById("totalProducts").textContent = products.length;
+        document.getElementById("tblProducts").textContent = products.length;
+
+        // Load orders
+        const ordersRes = await fetch(API + "/orders", { headers });
+        const orders = await ordersRes.json();
+        document.getElementById("totalOrders").textContent = orders.length;
+        document.getElementById("tblOrders").textContent = orders.length;
+
+        // Load payments
+        const paymentsRes = await fetch(API + "/payments", { headers });
+        const payments = await paymentsRes.json();
+        document.getElementById("totalPayments").textContent = payments.length;
+        document.getElementById("tblPayments").textContent = payments.length;
+
+        // Load shipments
+        const shipmentsRes = await fetch(API + "/shipments", { headers });
+        const shipments = await shipmentsRes.json();
+        document.getElementById("totalShipments").textContent = shipments.length;
+        document.getElementById("tblShipments").textContent = shipments.length;
+
+        // Load documents
+        const docsRes = await fetch(API + "/documents", { headers });
+        const docs = await docsRes.json();
+        document.getElementById("totalDocuments").textContent = docs.length;
+        document.getElementById("tblDocuments").textContent = docs.length;
+
+        // Load invoices
+        const invoicesRes = await fetch(API + "/invoices", { headers });
+        const invoices = await invoicesRes.json();
+        document.getElementById("totalInvoices").textContent = invoices.length;
+        document.getElementById("tblInvoices").textContent = invoices.length;
+
+    } catch(e) {
+        console.error("Monitoring load error:", e);
+    }
+}
+
+loadMonitoring();
+</script>
+</body>
+</html>

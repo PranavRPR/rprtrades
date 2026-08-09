@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Products | RPR Trades</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: #f5f7fb; }
+        .page-header {
+            background: linear-gradient(135deg, #0d6efd, #4b7bec);
+            color: white; padding: 28px 32px; border-radius: 18px; margin-bottom: 24px;
+        }
+        .table-card { border: none; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+        .table thead { background: #f0f4ff; }
+        .table td, .table th { vertical-align: middle; padding: 14px 16px; }
+    </style>
+</head>
+<body>
+<div class="container-fluid py-4 px-4">
+
+    <!-- Header -->
+    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="mb-1"><i class="bi bi-box-seam-fill me-2"></i>My Products</h3>
+            <p class="mb-0 opacity-75">Products you have submitted for sale.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a th:href="@{/products/add}" class="btn btn-light fw-semibold">
+                <i class="bi bi-plus-circle me-1"></i>Add Product
+            </a>
+            <a th:href="@{/dashboard/exporter}" class="btn btn-outline-light fw-semibold">
+                <i class="bi bi-arrow-left me-1"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-5">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by name or category…">
+                </div>
+                <div class="col-lg-3">
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="REJECTED">Rejected</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-primary" onclick="applyFilter()">
+                        <i class="bi bi-search me-1"></i>Search
+                    </button>
+                </div>
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-outline-secondary" onclick="resetFilter()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card table-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th><th>Product Name</th><th>Category</th>
+                            <th>Price</th><th>Stock</th><th>Country</th>
+                            <th>Status</th><th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTable">
+                        <tr><td colspan="8" class="text-center py-5">
+                            <div class="spinner-border text-primary"></div>
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="text-center py-5" style="display:none;">
+        <i class="bi bi-box display-1 text-secondary"></i>
+        <h4 class="mt-3">No Products Found</h4>
+        <p class="text-muted">Start by adding your first product.</p>
+        <a th:href="@{/products/add}" class="btn btn-primary">Add Product</a>
+    </div>
+
+    <footer class="text-center mt-5 pt-3 border-top">
+        <small class="text-muted">© 2026 RPR Trades | Exporter Module</small>
+    </footer>
+</div>
+
+<!-- Product Details Modal -->
+<div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-box-seam me-2"></i>Product Details</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="text-muted small">Product Name</label><p id="mName" class="fw-semibold"></p></div>
+                    <div class="col-md-6"><label class="text-muted small">Category</label><p id="mCategory" class="fw-semibold"></p></div>
+                    <div class="col-md-6"><label class="text-muted small">Price</label><p id="mPrice" class="fw-semibold text-success"></p></div>
+                    <div class="col-md-6"><label class="text-muted small">Stock Quantity</label><p id="mStock" class="fw-semibold"></p></div>
+                    <div class="col-md-6"><label class="text-muted small">Country of Origin</label><p id="mCountry" class="fw-semibold"></p></div>
+                    <div class="col-md-6"><label class="text-muted small">Status</label><p id="mStatus" class="fw-semibold"></p></div>
+                    <div class="col-12"><label class="text-muted small">Description</label><p id="mDesc" class="fw-semibold"></p></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Product</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Product Name <span class="text-danger">*</span></label>
+                            <input type="text" id="editName" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Category <span class="text-danger">*</span></label>
+                            <select id="editCategory" class="form-select" required>
+                                <option>Electronics</option><option>Agriculture</option>
+                                <option>Food</option><option>Textile</option>
+                                <option>Machinery</option><option>Furniture</option><option>Medical</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Price (₹) <span class="text-danger">*</span></label>
+                            <input type="number" id="editPrice" class="form-control" min="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Stock Quantity <span class="text-danger">*</span></label>
+                            <input type="number" id="editStock" class="form-control" min="0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Country of Origin <span class="text-danger">*</span></label>
+                            <input type="text" id="editCountry" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea id="editDesc" class="form-control" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-warning fw-semibold" onclick="saveEdit()">
+                    <i class="bi bi-check-circle me-1"></i>Update Product
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/toast.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/auth-guard.js}"></script>
+<script>
+const API      = "/api";
+const token    = sessionStorage.getItem("token");
+const userId   = sessionStorage.getItem("userId");
+const headers  = { "Content-Type": "application/json", "Authorization": "Bearer " + token };
+
+let allProducts = [];
+
+function statusBadge(s) {
+    const c = { APPROVED:"success", PENDING:"warning text-dark", REJECTED:"danger" };
+    return `<span class="badge bg-${c[s]||"secondary"}">${s}</span>`;
+}
+
+async function loadMyProducts() {
+    try {
+        const r = await fetch(`${API}/products/my/${userId}`, { headers });
+        if (!r.ok) throw new Error("Failed to load products.");
+        allProducts = await r.json();
+        renderTable(allProducts);
+    } catch(e) {
+        document.getElementById("productTable").innerHTML =
+            `<tr><td colspan="8" class="text-center text-danger py-4">${e.message}</td></tr>`;
+    }
+}
+
+function renderTable(list) {
+    const tb = document.getElementById("productTable");
+    const es = document.getElementById("emptyState");
+    tb.innerHTML = "";
+    if (!list.length) { es.style.display = "block"; return; }
+    es.style.display = "none";
+    list.forEach(p => {
+        tb.innerHTML += `
+        <tr>
+            <td>${p.productId}</td>
+            <td><strong>${p.productName}</strong></td>
+            <td>${p.category}</td>
+            <td class="text-success fw-semibold">₹ ${p.price}</td>
+            <td>${p.stockQuantity}</td>
+            <td>${p.countryOfOrigin}</td>
+            <td>${statusBadge(p.status)}</td>
+            <td class="text-center">
+                <button class="btn btn-info btn-sm text-white me-1" title="View" onclick="viewProduct(${p.productId})">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-warning btn-sm me-1" title="Edit" onclick="openEdit(${p.productId})">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" title="Delete" onclick="deleteProduct(${p.productId})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>`;
+    });
+}
+
+function applyFilter() {
+    const kw = document.getElementById("searchInput").value.toLowerCase().trim();
+    const st = document.getElementById("statusFilter").value;
+    renderTable(allProducts.filter(p =>
+        (!kw || p.productName.toLowerCase().includes(kw) || p.category.toLowerCase().includes(kw)) &&
+        (!st || p.status === st)
+    ));
+}
+
+function resetFilter() {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("statusFilter").value = "";
+    renderTable(allProducts);
+}
+
+document.getElementById("searchInput").addEventListener("keyup", applyFilter);
+document.getElementById("statusFilter").addEventListener("change", applyFilter);
+
+async function viewProduct(id) {
+    const r = await fetch(`${API}/products/${id}`, { headers });
+    const p = await r.json();
+    document.getElementById("mName").textContent    = p.productName;
+    document.getElementById("mCategory").textContent = p.category;
+    document.getElementById("mPrice").textContent   = "₹ " + p.price;
+    document.getElementById("mStock").textContent   = p.stockQuantity;
+    document.getElementById("mCountry").textContent = p.countryOfOrigin;
+    document.getElementById("mStatus").innerHTML    = statusBadge(p.status);
+    document.getElementById("mDesc").textContent    = p.description;
+    new bootstrap.Modal(document.getElementById("productModal")).show();
+}
+
+function openEdit(id) {
+    const p = allProducts.find(x => x.productId === id);
+    if (!p) return;
+    document.getElementById("editId").value       = p.productId;
+    document.getElementById("editName").value     = p.productName;
+    document.getElementById("editCategory").value = p.category;
+    document.getElementById("editPrice").value    = p.price;
+    document.getElementById("editStock").value    = p.stockQuantity;
+    document.getElementById("editCountry").value  = p.countryOfOrigin;
+    document.getElementById("editDesc").value     = p.description;
+    new bootstrap.Modal(document.getElementById("editModal")).show();
+}
+
+async function saveEdit() {
+    const id = document.getElementById("editId").value;
+    const body = {
+        productName:     document.getElementById("editName").value.trim(),
+        category:        document.getElementById("editCategory").value,
+        price:           Number(document.getElementById("editPrice").value),
+        stockQuantity:   Number(document.getElementById("editStock").value),
+        countryOfOrigin: document.getElementById("editCountry").value.trim(),
+        description:     document.getElementById("editDesc").value.trim(),
+        userId:          Number(userId)
+    };
+    const r = await fetch(`${API}/products/${id}`, { method:"PUT", headers, body: JSON.stringify(body) });
+    if (r.ok) {
+        bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
+        showToast("Product updated and sent for re-approval.", "success");
+        loadMyProducts();
+    } else {
+        showToast(await r.text(), "danger");
+    }
+}
+
+async function deleteProduct(id) {
+    Toast.confirm(`Delete product #${id}? This cannot be undone.`, async () => {
+        const r = await fetch(`${API}/products/${id}`, { method:"DELETE", headers });
+        if (r.ok) { Toast.show("Product deleted.", "success"); loadMyProducts(); }
+        else Toast.show(await r.text(), "danger");
+    }, null, { confirmText: "Delete", title: "Delete Product" });
+}
+
+function showToast(msg, type="success") { Toast.show(msg, type); }
+
+loadMyProducts();
+</script>
+</body>
+</html>

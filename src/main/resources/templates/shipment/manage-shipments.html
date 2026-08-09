@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Shipments | RPR Trades</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: #f5f7fb; }
+        .page-header {
+            background: linear-gradient(135deg, #0d6efd, #00b4d8);
+            color: #fff; padding: 28px 32px; border-radius: 18px; margin-bottom: 24px;
+        }
+        .stat-box {
+            background: #fff; border-radius: 14px; padding: 20px;
+            box-shadow: 0 6px 18px rgba(0,0,0,.07); text-align: center;
+        }
+        .stat-box h3 { font-weight:700; font-size:26px; margin:0; }
+        .table-card { border:none; border-radius:18px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.08); }
+        .table td, .table th { vertical-align:middle; padding:13px 16px; }
+        .table thead { background: #f0f7ff; }
+    </style>
+</head>
+<body>
+<div class="container-fluid py-4 px-4">
+
+    <!-- Header -->
+    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="mb-1"><i class="bi bi-truck me-2"></i>Manage Shipments</h3>
+            <p class="mb-0 opacity-75">Track and update shipment status and location.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a th:href="@{/shipments/create}" class="btn btn-light fw-semibold">
+                <i class="bi bi-plus-circle me-1"></i>New Shipment
+            </a>
+            <a id="dashboardLink" href="/dashboard/exporter" class="btn btn-dark fw-semibold">
+                <i class="bi bi-arrow-left me-1"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="stat-box">
+            <p class="text-muted mb-1 small">Total</p>
+            <h3 id="totalShipments" class="text-primary">0</h3>
+        </div></div>
+        <div class="col-md-3"><div class="stat-box">
+            <p class="text-muted mb-1 small">Created</p>
+            <h3 id="createdCount" class="text-warning">0</h3>
+        </div></div>
+        <div class="col-md-3"><div class="stat-box">
+            <p class="text-muted mb-1 small">In Transit</p>
+            <h3 id="transitCount" class="text-info">0</h3>
+        </div></div>
+        <div class="col-md-3"><div class="stat-box">
+            <p class="text-muted mb-1 small">Delivered</p>
+            <h3 id="deliveredCount" class="text-success">0</h3>
+        </div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-5">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by tracking number or order ID…">
+                </div>
+                <div class="col-lg-3">
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="CREATED">Created</option>
+                        <option value="IN_TRANSIT">In Transit</option>
+                        <option value="DELIVERED">Delivered</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-primary" onclick="applyFilter()">
+                        <i class="bi bi-search me-1"></i>Search
+                    </button>
+                </div>
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-outline-secondary" onclick="resetFilter()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card table-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Tracking No</th><th>Order</th>
+                            <th>Current Location</th><th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shipmentTable">
+                        <tr><td colspan="6" class="text-center py-5">
+                            <div class="spinner-border text-primary"></div>
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="emptyState" class="text-center py-5" style="display:none;">
+        <i class="bi bi-truck display-1 text-secondary"></i>
+        <h4 class="mt-3">No Shipments Yet</h4>
+        <p class="text-muted">Create your first shipment for a paid order.</p>
+        <a th:href="@{/shipments/create}" class="btn btn-primary">Create Shipment</a>
+    </div>
+
+    <footer class="text-center mt-5 pt-3 border-top">
+        <small class="text-muted">© 2026 RPR Trades | Shipment Management</small>
+    </footer>
+</div>
+
+<!-- Update Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Update Shipment</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3 p-3 bg-light rounded">
+                    <small class="text-muted">Tracking Number</small>
+                    <p id="mTracking" class="fw-bold mb-0 font-monospace"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Current Location <span class="text-danger">*</span></label>
+                    <input type="text" id="newLocation" class="form-control" placeholder="e.g. Delhi Hub, In Transit to Chennai">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Shipment Status <span class="text-danger">*</span></label>
+                    <select id="newStatus" class="form-select">
+                        <option value="CREATED">Created</option>
+                        <option value="IN_TRANSIT">In Transit</option>
+                        <option value="DELIVERED">Delivered</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary fw-semibold" onclick="saveUpdate()">
+                    <i class="bi bi-check-circle me-1"></i>Update
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/toast.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/auth-guard.js}"></script>
+<script>
+const API        = "/api";
+const token      = sessionStorage.getItem("token");
+const role       = sessionStorage.getItem("role");
+const userId     = sessionStorage.getItem("userId");
+const headers    = { "Authorization": "Bearer " + token, "Content-Type": "application/json" };
+
+let allShipments     = [];
+let selectedShipment = null;
+
+// Role-aware dashboard link
+document.getElementById("dashboardLink").href =
+    role === "ADMIN" ? "/dashboard/admin" : "/dashboard/exporter";
+
+function statusBadge(s) {
+    const c = { CREATED:"warning text-dark", IN_TRANSIT:"info", DELIVERED:"success" };
+    return `<span class="badge bg-${c[s]||"secondary"}">${s.replace("_"," ")}</span>`;
+}
+
+async function loadShipments() {
+    try {
+        // Role-aware: Admin gets all, Exporter gets their own
+        const url = role === "ADMIN"
+            ? `${API}/shipments`
+            : `${API}/shipments/exporter/${userId}`;
+
+        const r = await fetch(url, { headers });
+        if (!r.ok) throw new Error(await r.text());
+        allShipments = await r.json();
+        updateStats(allShipments);
+        renderTable(allShipments);
+    } catch(e) {
+        document.getElementById("shipmentTable").innerHTML =
+            `<tr><td colspan="6" class="text-center text-danger py-4">${e.message}</td></tr>`;
+    }
+}
+
+function updateStats(data) {
+    document.getElementById("totalShipments").textContent = data.length;
+    document.getElementById("createdCount").textContent   = data.filter(s=>s.status==="CREATED").length;
+    document.getElementById("transitCount").textContent   = data.filter(s=>s.status==="IN_TRANSIT").length;
+    document.getElementById("deliveredCount").textContent = data.filter(s=>s.status==="DELIVERED").length;
+}
+
+function renderTable(list) {
+    const tb = document.getElementById("shipmentTable");
+    const es = document.getElementById("emptyState");
+    tb.innerHTML = "";
+    if (!list.length) { es.style.display="block"; return; }
+    es.style.display = "none";
+    list.forEach(s => {
+        const canEdit = role === "ADMIN" || role === "EXPORTER";
+        tb.innerHTML += `
+        <tr>
+            <td>${s.shipmentId}</td>
+            <td><code>${s.trackingNumber}</code></td>
+            <td>#${s.order?.orderId||"-"}</td>
+            <td>${s.currentLocation||"-"}</td>
+            <td>${statusBadge(s.status)}</td>
+            <td class="text-center">
+                ${canEdit ? `
+                <button class="btn btn-primary btn-sm" onclick="openUpdate(${s.shipmentId})" title="Update">
+                    <i class="bi bi-pencil-square"></i>
+                </button>` : `<span class="text-muted small">—</span>`}
+            </td>
+        </tr>`;
+    });
+}
+
+function openUpdate(id) {
+    selectedShipment = allShipments.find(s => s.shipmentId === id);
+    if (!selectedShipment) return;
+    document.getElementById("mTracking").textContent     = selectedShipment.trackingNumber;
+    document.getElementById("newLocation").value         = selectedShipment.currentLocation || "";
+    document.getElementById("newStatus").value           = selectedShipment.status;
+    new bootstrap.Modal(document.getElementById("updateModal")).show();
+}
+
+async function saveUpdate() {
+    if (!selectedShipment) return;
+    const location = document.getElementById("newLocation").value.trim();
+    const status   = document.getElementById("newStatus").value;
+
+    if (!location) { Toast.show("Location is required.", "warning"); return; }
+
+    try {
+        // Update status
+        const r1 = await fetch(
+            `${API}/shipments/status/${selectedShipment.shipmentId}?status=${status}`,
+            { method:"PUT", headers }
+        );
+        // Update location
+        const r2 = await fetch(
+            `${API}/shipments/location/${selectedShipment.shipmentId}?location=${encodeURIComponent(location)}`,
+            { method:"PUT", headers }
+        );
+
+        if (r1.ok && r2.ok) {
+            bootstrap.Modal.getInstance(document.getElementById("updateModal")).hide();
+            showToast("Shipment updated successfully.", "success");
+            loadShipments();
+        } else {
+            const err = await (r1.ok ? r2 : r1).text();
+            showToast(err, "danger");
+        }
+    } catch(e) {
+        showToast("Server error. Please try again.", "danger");
+    }
+}
+
+function applyFilter() {
+    const kw = document.getElementById("searchInput").value.toLowerCase().trim();
+    const st = document.getElementById("statusFilter").value;
+    renderTable(allShipments.filter(s =>
+        (!kw || (s.trackingNumber||"").toLowerCase().includes(kw) ||
+                 String(s.shipmentId).includes(kw) ||
+                 String(s.order?.orderId||"").includes(kw)) &&
+        (!st || s.status === st)
+    ));
+}
+
+function resetFilter() {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("statusFilter").value = "";
+    renderTable(allShipments);
+}
+
+document.getElementById("searchInput").addEventListener("keyup", applyFilter);
+document.getElementById("statusFilter").addEventListener("change", applyFilter);
+
+function showToast(msg, type="success") { Toast.show(msg, type); }
+
+function logout() {
+    Toast.confirm("Are you sure you want to log out?", () => {
+        sessionStorage.clear();
+        window.location.replace("/login");
+    }, null, { confirmText: "Logout", title: "Confirm Logout" });
+}
+
+loadShipments();
+</script>
+</body>
+</html>

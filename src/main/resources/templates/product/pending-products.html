@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Pending Products | RPR Trades</title>
+
+    <!-- Bootstrap -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          th:href="@{/css/dashboard.css}">
+
+    <link rel="stylesheet"
+          th:href="@{/css/product.css}">
+
+    <style>
+
+        body{
+
+            background:#f5f7fb;
+
+        }
+
+        .header-card{
+
+            background:linear-gradient(135deg,#0d6efd,#4b7bec);
+
+            color:white;
+
+            padding:30px;
+
+            border-radius:18px;
+
+            margin-bottom:25px;
+
+        }
+
+        .table-card{
+
+            border:none;
+
+            border-radius:18px;
+
+            box-shadow:0 12px 30px rgba(0,0,0,.08);
+
+        }
+
+        .table th{
+
+            white-space:nowrap;
+
+        }
+
+        .action-btn{
+
+            min-width:42px;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+
+    <div class="header-card">
+
+        <div class="row align-items-center">
+
+            <div class="col-lg-8">
+
+                <h2>
+
+                    <i class="bi bi-hourglass-split"></i>
+
+                    Pending Products
+
+                </h2>
+
+                <p class="mb-0">
+
+                    Review and approve exporter submitted products.
+
+                </p>
+
+            </div>
+
+            <div class="col-lg-4 text-end">
+
+                <a th:href="@{/dashboard}"
+
+                   class="btn btn-light">
+
+                    <i class="bi bi-speedometer2"></i>
+
+                    Dashboard
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Search -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-lg-8">
+
+                    <input
+
+                        id="searchInput"
+
+                        class="form-control"
+
+                        placeholder="Search Product">
+
+                </div>
+
+                <div class="col-lg-4">
+
+                    <button
+
+                        class="btn btn-primary w-100"
+
+                        onclick="filterProducts()">
+
+                        <i class="bi bi-search"></i>
+
+                        Search
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Pending Products -->
+
+    <div class="card table-card">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-dark">
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Product</th>
+
+                        <th>Category</th>
+
+                        <th>Price</th>
+
+                        <th>Country</th>
+
+                        <th>Stock</th>
+
+                        <th>Exporter</th>
+
+                        <th>Status</th>
+
+                        <th class="text-center">
+
+                            Actions
+
+                        </th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody id="pendingProductsTable">
+
+                    <!-- Dynamic Data -->
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Loading -->
+
+    <div
+
+        id="loading"
+
+        class="text-center py-5"
+
+        style="display:none;">
+
+        <div class="spinner-border text-primary"
+             style="width:4rem;height:4rem;">
+
+        </div>
+
+        <h5 class="mt-3">
+
+            Loading Pending Products...
+
+        </h5>
+
+    </div>
+
+    <!-- Empty State -->
+
+    <div
+
+        id="emptyState"
+
+        class="text-center py-5"
+
+        style="display:none;">
+
+        <i class="bi bi-box display-1 text-secondary"></i>
+
+        <h3 class="mt-3">
+
+            No Pending Products
+
+        </h3>
+
+        <p class="text-muted">
+
+            All products have been reviewed.
+
+        </p>
+
+    </div>
+
+    <nav class="mt-4">
+
+        <ul class="pagination justify-content-center"
+
+            id="pagination">
+
+        </ul>
+
+    </nav>
+        <!-- ========================================== -->
+    <!-- PRODUCT DETAILS MODAL -->
+    <!-- ========================================== -->
+
+    <div class="modal fade"
+         id="productModal"
+         tabindex="-1">
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+
+                        Product Details
+
+                    </h5>
+
+                    <button class="btn-close"
+                            data-bs-dismiss="modal">
+
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <table class="table table-bordered">
+
+                        <tr>
+
+                            <th width="35%">Product</th>
+
+                            <td id="mProduct"></td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Category</th>
+
+                            <td id="mCategory"></td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Description</th>
+
+                            <td id="mDescription"></td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Price</th>
+
+                            <td id="mPrice"></td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Country</th>
+
+                            <td id="mCountry"></td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Stock</th>
+
+                            <td id="mStock"></td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Status</th>
+
+                            <td id="mStatus"></td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Exporter</th>
+
+                            <td id="mExporter"></td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<footer class="border-top mt-5">
+
+    <div class="container py-4">
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <strong>
+
+                    RPR Trades
+
+                </strong>
+
+            </div>
+
+            <div class="col-md-6 text-end">
+
+                © 2026 Import & Export Management System
+
+            </div>
+
+        </div>
+
+    </div>
+
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/toast.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/auth-guard.js}"></script>
+
+<script>
+const token   = sessionStorage.getItem("token");
+const headers = {
+    "Content-Type":  "application/json",
+    "Authorization": "Bearer " + token
+};
+
+let pendingProducts = [];
+
+document.addEventListener("DOMContentLoaded", loadPendingProducts);
+
+async function loadPendingProducts() {
+    document.getElementById("loading").style.display = "block";
+    document.getElementById("emptyState").style.display = "none";
+    try {
+        const r = await fetch("/api/products/pending", { headers });
+        if (!r.ok) throw new Error("Unable to load pending products.");
+        pendingProducts = await r.json();
+        renderProducts(pendingProducts);
+    } catch (error) {
+        Toast.show(error.message, "danger");
+    } finally {
+        document.getElementById("loading").style.display = "none";
+    }
+}
+
+function renderProducts(list) {
+    const tbody = document.getElementById("pendingProductsTable");
+    tbody.innerHTML = "";
+
+    if (!list.length) {
+        document.getElementById("emptyState").style.display = "block";
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">No pending products.</td></tr>`;
+        return;
+    }
+    document.getElementById("emptyState").style.display = "none";
+
+    list.forEach(p => {
+        tbody.innerHTML += `
+        <tr>
+            <td>${p.productId}</td>
+            <td><strong>${p.productName}</strong></td>
+            <td>${p.category}</td>
+            <td class="text-success fw-semibold">₹ ${p.price}</td>
+            <td>${p.countryOfOrigin}</td>
+            <td>${p.stockQuantity}</td>
+            <td>${p.exporter ? p.exporter.name : "—"}</td>
+            <td><span class="badge bg-warning text-dark">PENDING</span></td>
+            <td class="text-center">
+                <button class="btn btn-sm btn-info action-btn text-white me-1"
+                        onclick="viewProduct(${p.productId})" title="View">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-success action-btn me-1"
+                        onclick="approveProduct(${p.productId})" title="Approve">
+                    <i class="bi bi-check-lg"></i>
+                </button>
+                <button class="btn btn-sm btn-danger action-btn"
+                        onclick="rejectProduct(${p.productId})" title="Reject">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </td>
+        </tr>`;
+    });
+}
+
+function filterProducts() {
+    const kw = document.getElementById("searchInput").value.toLowerCase().trim();
+    renderProducts(pendingProducts.filter(p =>
+        p.productName.toLowerCase().includes(kw) ||
+        p.category.toLowerCase().includes(kw)
+    ));
+}
+
+document.getElementById("searchInput")?.addEventListener("keyup", filterProducts);
+
+async function viewProduct(id) {
+    try {
+        const r = await fetch("/api/products/" + id, { headers });
+        if (!r.ok) throw new Error("Could not load product.");
+        const p = await r.json();
+        document.getElementById("mProduct").textContent     = p.productName;
+        document.getElementById("mCategory").textContent    = p.category;
+        document.getElementById("mDescription").textContent = p.description;
+        document.getElementById("mPrice").textContent       = "₹ " + p.price;
+        document.getElementById("mCountry").textContent     = p.countryOfOrigin;
+        document.getElementById("mStock").textContent       = p.stockQuantity;
+        document.getElementById("mStatus").textContent      = p.status;
+        document.getElementById("mExporter").textContent    = p.exporter ? p.exporter.name : "—";
+        new bootstrap.Modal(document.getElementById("productModal")).show();
+    } catch (e) {
+        Toast.show(e.message, "danger");
+    }
+}
+
+async function approveProduct(id) {
+    const product = pendingProducts.find(p => p.productId === id);
+    Toast.confirm(
+        `Approve <strong>${product?.productName || "product #" + id}</strong>? It will be listed on the marketplace.`,
+        async () => {
+            try {
+                const r = await fetch("/api/products/approve/" + id, { method: "PUT", headers });
+                if (r.ok) {
+                    Toast.show("Product approved and listed on marketplace.", "success");
+                    loadPendingProducts();
+                } else {
+                    Toast.show(await r.text() || "Approval failed.", "danger");
+                }
+            } catch { Toast.show("Server error.", "danger"); }
+        },
+        null,
+        { confirmText: "Approve", title: "Approve Product", confirmClass: "rpr-btn-success" }
+    );
+}
+
+async function rejectProduct(id) {
+    const product = pendingProducts.find(p => p.productId === id);
+    Toast.confirm(
+        `Reject <strong>${product?.productName || "product #" + id}</strong>? The exporter will need to resubmit.`,
+        async () => {
+            try {
+                const r = await fetch("/api/products/reject/" + id, { method: "PUT", headers });
+                if (r.ok) {
+                    Toast.show("Product rejected.", "warning");
+                    loadPendingProducts();
+                } else {
+                    Toast.show(await r.text() || "Rejection failed.", "danger");
+                }
+            } catch { Toast.show("Server error.", "danger"); }
+        },
+        null,
+        { confirmText: "Reject", title: "Reject Product" }
+    );
+}
+</script>
+
+</body>
+
+</html>

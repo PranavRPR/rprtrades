@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Orders | RPR Trades</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        body { background: #f4f7fc; }
+        .page-header {
+            background: linear-gradient(135deg, #fd7e14, #ffc107);
+            color: #fff; padding: 30px; border-radius: 15px; margin-bottom: 25px;
+        }
+        .table-card { border: none; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,.08); }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-4">
+
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2><i class="bi bi-hourglass-split"></i> Pending Orders</h2>
+            <p class="mb-0">Approve or reject orders waiting for action.</p>
+        </div>
+        <a th:href="@{/dashboard}" class="btn btn-light">
+            <i class="bi bi-arrow-left"></i> Dashboard
+        </a>
+    </div>
+
+    <div class="card table-card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-warning">
+                        <tr>
+                            <th>ID</th><th>Importer</th><th>Product</th>
+                            <th>Qty</th><th>Total</th><th>Status</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingOrdersTable">
+                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="emptyState" class="text-center py-5" style="display:none;">
+        <i class="bi bi-check-circle-fill display-1 text-success"></i>
+        <h3 class="mt-3">No Pending Orders</h3>
+        <p class="text-muted">All orders have been reviewed.</p>
+    </div>
+
+    <footer class="text-center mt-5"><hr>
+        <p class="text-muted">© 2026 RPR Trades | Order Management</p>
+    </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/toast.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/auth-guard.js}"></script>
+<script>
+const API    = "/api";
+const token  = sessionStorage.getItem("token");
+const role   = sessionStorage.getItem("role");
+const userId = sessionStorage.getItem("userId");
+const headers = {
+    "Authorization": "Bearer " + token,
+    "Content-Type":  "application/json"
+};
+
+async function loadPendingOrders() {
+    const url = role === "EXPORTER"
+        ? API + "/orders/exporter/" + userId
+        : API + "/orders";
+
+    const response = await fetch(url, { headers });
+    const orders   = await response.json();
+    const pending  = orders.filter(o => o.status === "PENDING");
+
+    const tbody = document.getElementById("pendingOrdersTable");
+    tbody.innerHTML = "";
+
+    if (pending.length === 0) {
+        document.getElementById("emptyState").style.display = "block";
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center">No Pending Orders</td></tr>`;
+        return;
+    }
+
+    pending.forEach(order => {
+        tbody.innerHTML += `
+        <tr>
+            <td>${order.orderId}</td>
+            <td>${order.importer?.name ?? "-"}</td>
+            <td>${order.product?.productName ?? "-"}</td>
+            <td>${order.quantity}</td>
+            <td>₹ ${order.totalAmount}</td>
+            <td><span class="badge bg-warning text-dark">PENDING</span></td>
+            <td class="text-center">
+                <button class="btn btn-success btn-sm me-1" onclick="approveOrder(${order.orderId})">
+                    <i class="bi bi-check-lg"></i> Approve
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="rejectOrder(${order.orderId})">
+                    <i class="bi bi-x-lg"></i> Reject
+                </button>
+            </td>
+        </tr>`;
+    });
+}
+
+async function approveOrder(id) {
+    Toast.confirm(`Approve order #${id}? The importer will be notified to make payment.`, async () => {
+        try {
+            const res = await fetch(API + "/orders/approve/" + id, { method: "PUT", headers });
+            if (res.ok) { Toast.show("Order #" + id + " approved!", "success"); loadPendingOrders(); }
+            else Toast.show(await res.text() || "Failed to approve order.", "danger");
+        } catch { Toast.show("Server error.", "danger"); }
+    }, null, { confirmText: "Approve", title: "Approve Order" });
+}
+
+async function rejectOrder(id) {
+    Toast.confirm(`Reject order #${id}? This cannot be undone.`, async () => {
+        try {
+            const res = await fetch(API + "/orders/reject/" + id, { method: "PUT", headers });
+            if (res.ok) { Toast.show("Order #" + id + " rejected.", "warning"); loadPendingOrders(); }
+            else Toast.show(await res.text() || "Failed to reject order.", "danger");
+        } catch { Toast.show("Server error.", "danger"); }
+    }, null, { confirmText: "Reject", title: "Reject Order" });
+}
+
+loadPendingOrders();
+</script>
+</body>
+</html>

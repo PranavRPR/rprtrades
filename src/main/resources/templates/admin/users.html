@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>User Management | RPR Trades</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+    <style>
+        /* Admin accent */
+        .sidebar   { background: #0c1220; }
+        .logo i    { color: #f59e0b !important; filter: drop-shadow(0 0 8px rgba(245,158,11,.5)); }
+        .menu li a.active { background: linear-gradient(135deg, #d97706, #f59e0b) !important; }
+
+        .role-badge-ADMIN    { background: linear-gradient(135deg,#d97706,#f59e0b); color:#fff; }
+        .role-badge-IMPORTER { background: linear-gradient(135deg,#059669,#10b981); color:#fff; }
+        .role-badge-EXPORTER { background: linear-gradient(135deg,#4f46e5,#818cf8); color:#fff; }
+        .role-badge { font-size:11px; padding:4px 12px; border-radius:20px; font-weight:700; }
+
+        .filter-bar { background:#fff; border-radius:14px; padding:18px 22px; box-shadow:0 4px 16px rgba(0,0,0,.06); margin-bottom:24px; }
+        .empty-row td, .error-row td { color: #94a3b8; font-size: 13px; }
+        .error-row  td { color: #ef4444; }
+    </style>
+</head>
+
+<body>
+<div class="wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="bi bi-globe2"></i>
+            <span>RPR Trades</span>
+        </div>
+        <ul class="menu">
+            <li><a th:href="@{/dashboard/admin}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+            <li><a th:href="@{/admin/users}" class="active"><i class="bi bi-people"></i> Users</a></li>
+            <li><a th:href="@{/products/pending}"><i class="bi bi-box-seam"></i> Product Approvals</a></li>
+            <li><a th:href="@{/admin/orders}"><i class="bi bi-cart3"></i> All Orders</a></li>
+            <li><a th:href="@{/admin/payments}"><i class="bi bi-credit-card"></i> Payments</a></li>
+            <li><a th:href="@{/admin/shipments}"><i class="bi bi-truck"></i> Shipments</a></li>
+            <li><a th:href="@{/admin/documents}"><i class="bi bi-file-earmark-text"></i> Documents</a></li>
+            <li><a th:href="@{/admin/invoices}"><i class="bi bi-receipt"></i> Invoices</a></li>
+            <li><a th:href="@{/admin/reports}"><i class="bi bi-bar-chart-line"></i> Reports</a></li>
+            <li><a th:href="@{/admin/monitoring}"><i class="bi bi-shield-check"></i> Monitoring</a></li>
+            <li><a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+
+        <!-- Topbar -->
+        <nav class="topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light d-lg-none" id="menuToggle"><i class="bi bi-list fs-4"></i></button>
+                <div>
+                    <h4 class="fw-bold mb-0">User Management</h4>
+                    <small class="text-muted">Enable, disable and monitor all platform accounts</small>
+                </div>
+            </div>
+            <div class="top-right">
+                <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="loadUsers()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                </button>
+                <div class="profile">
+                    <img src="https://ui-avatars.com/api/?background=d97706&color=fff&name=Admin"
+                         class="rounded-circle" width="40" height="40">
+                    <div><strong id="adminName">Admin</strong><br><small class="text-muted">Administrator</small></div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Stats mini-row -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center p-3">
+                    <h4 id="totalCount" class="fw-bold text-primary mb-0">—</h4>
+                    <small class="text-muted">Total Users</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center p-3">
+                    <h4 id="importerCount" class="fw-bold text-success mb-0">—</h4>
+                    <small class="text-muted">Importers</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center p-3">
+                    <h4 id="exporterCount" class="fw-bold" style="color:#818cf8" mb-0>—</h4>
+                    <small class="text-muted">Exporters</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center p-3">
+                    <h4 id="activeCount" class="fw-bold text-warning mb-0">—</h4>
+                    <small class="text-muted">Active</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="filter-bar">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-4">
+                    <input type="text" id="searchInput" class="form-control"
+                           placeholder="Search by name or email…">
+                </div>
+                <div class="col-lg-3">
+                    <select id="roleFilter" class="form-select">
+                        <option value="">All Roles</option>
+                        <option value="IMPORTER">Importer</option>
+                        <option value="EXPORTER">Exporter</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="disabled">Disabled</option>
+                    </select>
+                </div>
+                <div class="col-lg-1 d-grid">
+                    <button class="btn btn-primary" onclick="applyFilter()">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-outline-secondary" onclick="resetFilter()">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Table -->
+        <div class="card dashboard-table">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTable">
+                        <tr><td colspan="6" class="text-center py-4">
+                            <span class="spinner-border spinner-border-sm me-2 text-primary"></span>Loading users…
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="dashboard-footer mt-5">
+            <hr>
+            <div class="row">
+                <div class="col-md-6"><strong>© 2026 RPR Trades</strong><br><small class="text-muted">Admin Portal</small></div>
+                <div class="col-md-6 text-md-end mt-2 mt-md-0"><small class="text-muted">User Management v1.0</small></div>
+            </div>
+        </footer>
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/toast.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/auth-guard.js}"></script>
+
+<script>
+(function () {
+    'use strict';
+
+    // Greet
+    document.getElementById('adminName').textContent = getName();
+
+    // Sidebar
+    initSidebar();
+
+    let allUsers = [];
+
+    // ── Load users ──────────────────────────────────────────────────────────
+    window.loadUsers = async function () {
+        const tb = document.getElementById('userTable');
+        tb.innerHTML = `<tr><td colspan="6" class="text-center py-4">
+            <span class="spinner-border spinner-border-sm me-2 text-primary"></span>Refreshing…
+        </td></tr>`;
+
+        try {
+            allUsers = await apiFetch('/api/users');
+
+            // Update stats
+            document.getElementById('totalCount').textContent    = allUsers.length;
+            document.getElementById('importerCount').textContent = allUsers.filter(u => u.role === 'IMPORTER').length;
+            document.getElementById('exporterCount').textContent = allUsers.filter(u => u.role === 'EXPORTER').length;
+            document.getElementById('activeCount').textContent   = allUsers.filter(u => u.enabled !== false).length;
+
+            renderTable(allUsers);
+        } catch (e) {
+            tb.innerHTML = `<tr class="error-row"><td colspan="6" class="text-center py-4">
+                <i class="bi bi-exclamation-triangle me-1"></i>${e.message}
+            </td></tr>`;
+            Toast.show('Could not load users: ' + e.message, 'danger');
+        }
+    };
+
+    function renderTable(list) {
+        const tb = document.getElementById('userTable');
+        tb.innerHTML = '';
+        if (!list.length) {
+            tb.innerHTML = `<tr class="empty-row"><td colspan="6" class="text-center py-4">No users found.</td></tr>`;
+            return;
+        }
+        list.forEach(user => {
+            const enabled     = user.enabled !== false;
+            const statusBadge = enabled
+                ? `<span class="badge bg-success">Active</span>`
+                : `<span class="badge bg-danger">Disabled</span>`;
+            const roleCls     = `role-badge role-badge-${user.role}`;
+            const actionBtn   = enabled
+                ? `<button class="btn btn-sm btn-outline-danger" onclick="toggleUser(${user.userId}, false)">
+                       <i class="bi bi-x-circle me-1"></i>Disable
+                   </button>`
+                : `<button class="btn btn-sm btn-outline-success" onclick="toggleUser(${user.userId}, true)">
+                       <i class="bi bi-check-circle me-1"></i>Enable
+                   </button>`;
+            // Don't allow disabling admin itself
+            const isAdmin = user.role === 'ADMIN';
+
+            tb.innerHTML += `
+            <tr>
+                <td><small class="text-muted">#${user.userId}</small></td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=34&background=random"
+                             class="rounded-circle" width="34" height="34">
+                        <strong>${user.name}</strong>
+                    </div>
+                </td>
+                <td><small>${user.email}</small></td>
+                <td><span class="${roleCls}">${user.role}</span></td>
+                <td>${statusBadge}</td>
+                <td class="text-center">
+                    ${isAdmin ? '<span class="text-muted small">Protected</span>' : actionBtn}
+                </td>
+            </tr>`;
+        });
+    }
+
+    // ── Toggle user ─────────────────────────────────────────────────────────
+    window.toggleUser = function (id, enable) {
+        const user   = allUsers.find(u => u.userId === id);
+        const action = enable ? 'enable' : 'disable';
+        const title  = enable ? 'Enable User' : 'Disable User';
+        const msg    = enable
+            ? `Enable account for <strong>${user?.name || '#' + id}</strong>? They will be able to login.`
+            : `Disable account for <strong>${user?.name || '#' + id}</strong>? They will not be able to login.`;
+
+        Toast.confirm(msg, async () => {
+            try {
+                await apiFetch(`/api/users/${action}/${id}`, { method: 'PUT' });
+                Toast.show(`User ${enable ? 'enabled' : 'disabled'} successfully.`, enable ? 'success' : 'warning');
+                loadUsers();
+            } catch (e) {
+                Toast.show('Could not update user: ' + e.message, 'danger');
+            }
+        }, null, { confirmText: enable ? 'Enable' : 'Disable', title });
+    };
+
+    // ── Filters ─────────────────────────────────────────────────────────────
+    window.applyFilter = function () {
+        const kw  = document.getElementById('searchInput').value.toLowerCase().trim();
+        const rl  = document.getElementById('roleFilter').value;
+        const st  = document.getElementById('statusFilter').value;
+
+        renderTable(allUsers.filter(u =>
+            (!kw || u.name.toLowerCase().includes(kw) || u.email.toLowerCase().includes(kw)) &&
+            (!rl || u.role === rl) &&
+            (!st || (st === 'active' ? u.enabled !== false : u.enabled === false))
+        ));
+    };
+
+    window.resetFilter = function () {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('roleFilter').value  = '';
+        document.getElementById('statusFilter').value = '';
+        renderTable(allUsers);
+    };
+
+    document.getElementById('searchInput')?.addEventListener('keyup', window.applyFilter);
+    document.getElementById('roleFilter')?.addEventListener('change', window.applyFilter);
+    document.getElementById('statusFilter')?.addEventListener('change', window.applyFilter);
+
+    // Init
+    loadUsers();
+
+})();
+</script>
+
+</body>
+</html>

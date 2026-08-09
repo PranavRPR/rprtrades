@@ -1,0 +1,11 @@
+# Java crash/replay logs
+hs_err_pid*.log
+replay_pid*.log
+
+# Build output
+target/
+
+# IDE files
+.idea/
+*.iml
+.vscode/

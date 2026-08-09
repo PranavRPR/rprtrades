@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product | RPR Trades</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: #f5f7fb; }
+        .page-header {
+            background: linear-gradient(135deg, #0d6efd, #4b7bec);
+            color: white; padding: 30px 36px; border-radius: 18px; margin-bottom: 28px;
+        }
+        .form-card { border: none; border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+        .form-control, .form-select { min-height: 46px; border-radius: 10px; }
+        textarea.form-control { min-height: 130px; resize: none; }
+        .required { color: #dc3545; }
+        .status-badge {
+            background: #fff3cd; color: #856404;
+            padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+        }
+        .char-count { font-size: 12px; color: #6c757d; }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold" th:href="@{/dashboard/exporter}">
+            <i class="bi bi-globe2 me-2"></i>RPR Trades
+        </a>
+        <div class="ms-auto d-flex gap-2">
+            <a th:href="@{/products/my}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-box-seam me-1"></i>My Products
+            </a>
+            <a th:href="@{/dashboard/exporter}" class="btn btn-light btn-sm fw-semibold">
+                <i class="bi bi-speedometer2 me-1"></i>Dashboard
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h3 class="mb-1"><i class="bi bi-plus-circle-fill me-2"></i>Add New Product</h3>
+                <p class="mb-0 opacity-75">
+                    Fill in the details below. Your product will be sent for admin approval
+                    and listed on the marketplace once approved.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <span class="status-badge"><i class="bi bi-clock me-1"></i>Will be set to PENDING</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert area -->
+    <div id="alertArea"></div>
+
+    <!-- Form -->
+    <div class="card form-card">
+        <div class="card-body p-4 p-md-5">
+            <form id="productForm" novalidate>
+                <div class="row g-4">
+
+                    <!-- Product Name -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            Product Name <span class="required">*</span>
+                        </label>
+                        <input type="text" id="productName" class="form-control"
+                               placeholder="e.g. Basmati Rice 5kg" minlength="3" maxlength="150" required>
+                        <div class="invalid-feedback">Product name is required (min 3 characters).</div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            Category <span class="required">*</span>
+                        </label>
+                        <select id="category" class="form-select" required>
+                            <option value="">— Select Category —</option>
+                            <option>Electronics</option>
+                            <option>Agriculture</option>
+                            <option>Food</option>
+                            <option>Textile</option>
+                            <option>Machinery</option>
+                            <option>Furniture</option>
+                            <option>Medical</option>
+                        </select>
+                        <div class="invalid-feedback">Please select a category.</div>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            Unit Price (₹) <span class="required">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" id="price" class="form-control"
+                                   min="1" placeholder="0.00" step="0.01" required>
+                        </div>
+                        <div class="invalid-feedback">Enter a valid price greater than 0.</div>
+                    </div>
+
+                    <!-- Stock -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            Stock Quantity <span class="required">*</span>
+                        </label>
+                        <input type="number" id="stockQuantity" class="form-control"
+                               min="0" placeholder="e.g. 500" required>
+                        <div class="invalid-feedback">Stock quantity is required (min 0).</div>
+                    </div>
+
+                    <!-- Country of Origin -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            Country of Origin <span class="required">*</span>
+                        </label>
+                        <input type="text" id="countryOfOrigin" class="form-control"
+                               placeholder="e.g. India" maxlength="100" required>
+                        <div class="invalid-feedback">Country of origin is required.</div>
+                    </div>
+
+                    <!-- Status (readonly) -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Status</label>
+                        <input type="text" class="form-control bg-light fw-semibold text-warning" value="PENDING" readonly>
+                        <small class="text-muted">Admin will review and approve your product.</small>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">
+                            Description <span class="required">*</span>
+                        </label>
+                        <textarea id="description" class="form-control"
+                                  placeholder="Describe your product in detail (5–500 characters)…"
+                                  minlength="5" maxlength="500" required
+                                  oninput="document.getElementById('charCount').textContent = this.value.length"></textarea>
+                        <div class="d-flex justify-content-between mt-1">
+                            <div class="invalid-feedback d-block" id="descError" style="display:none!important;"></div>
+                            <small class="char-count ms-auto"><span id="charCount">0</span> / 500</small>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="col-12">
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-end gap-3 flex-wrap">
+                            <button type="reset" class="btn btn-outline-secondary px-4" onclick="resetForm()">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                            </button>
+                            <button type="submit" id="saveBtn" class="btn btn-primary px-5 fw-semibold">
+                                <i class="bi bi-check-circle me-1"></i>Save &amp; Submit
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loadingDiv" class="text-center mt-4" style="display:none;">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">Saving your product…</p>
+    </div>
+
+</div>
+
+<footer class="text-center py-4 mt-4 border-top">
+    <small class="text-muted">© 2026 RPR Trades | Exporter Module</small>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/toast.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/auth-guard.js}"></script>
+<script>
+const form   = document.getElementById("productForm");
+const token  = sessionStorage.getItem("token");
+const userId = sessionStorage.getItem("userId");
+const headers = { "Content-Type": "application/json", "Authorization": "Bearer " + token };
+
+function showAlert(msg, type) {
+    document.getElementById("alertArea").innerHTML =
+        `<div class="alert alert-${type} alert-dismissible fade show">
+            ${msg}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetForm() {
+    document.getElementById("charCount").textContent = "0";
+    document.getElementById("alertArea").innerHTML = "";
+    form.classList.remove("was-validated");
+}
+
+form.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    form.classList.add("was-validated");
+    if (!form.checkValidity()) return;
+
+    const btn = document.getElementById("saveBtn");
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Saving…`;
+    document.getElementById("loadingDiv").style.display = "block";
+
+    const payload = {
+        productName:     document.getElementById("productName").value.trim(),
+        category:        document.getElementById("category").value,
+        description:     document.getElementById("description").value.trim(),
+        price:           Number(document.getElementById("price").value),
+        countryOfOrigin: document.getElementById("countryOfOrigin").value.trim(),
+        stockQuantity:   Number(document.getElementById("stockQuantity").value),
+        userId:          Number(userId)
+    };
+
+    try {
+        const r = await fetch("/api/products/add", { method:"POST", headers, body: JSON.stringify(payload) });
+        document.getElementById("loadingDiv").style.display = "none";
+
+        if (r.ok) {
+            showAlert("✅ Product submitted successfully! Waiting for admin approval.", "success");
+            form.reset();
+            document.getElementById("charCount").textContent = "0";
+            form.classList.remove("was-validated");
+            setTimeout(() => window.location.href = "/products/my", 1800);
+        } else {
+            const err = await r.text();
+            showAlert("❌ " + err, "danger");
+        }
+    } catch(err) {
+        document.getElementById("loadingDiv").style.display = "none";
+        showAlert("❌ Server error. Please try again.", "danger");
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = `<i class="bi bi-check-circle me-1"></i>Save &amp; Submit`;
+});
+</script>
+</body>
+</html>

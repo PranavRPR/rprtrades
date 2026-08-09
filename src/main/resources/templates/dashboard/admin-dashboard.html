@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | RPR Trades</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+    <style>
+        /* Admin accent overrides */
+        .sidebar { background: #0c1220; }
+        .logo i   { color: #f59e0b !important; filter: drop-shadow(0 0 8px rgba(245,158,11,.5)); }
+        .menu li a.active { background: linear-gradient(135deg, #d97706, #f59e0b) !important; }
+
+        .admin-badge {
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            color: #fff; font-size: 11px; font-weight: 700;
+            padding: 3px 10px; border-radius: 20px;
+            letter-spacing: .5px; text-transform: uppercase;
+        }
+
+        .stat-gradient-1 { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+        .stat-gradient-2 { background: linear-gradient(135deg, #065f46, #10b981); }
+        .stat-gradient-3 { background: linear-gradient(135deg, #92400e, #f59e0b); }
+        .stat-gradient-4 { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+
+        .dashboard-card.stat-gradient-1,
+        .dashboard-card.stat-gradient-2,
+        .dashboard-card.stat-gradient-3,
+        .dashboard-card.stat-gradient-4 { color: #fff; }
+
+        .empty-row td { color: #94a3b8; font-size: 13px; }
+        .error-row  td { color: #ef4444; font-size: 13px; }
+    </style>
+</head>
+
+<body>
+<div class="wrapper">
+
+    <!-- ═══════════════════════════════
+         SIDEBAR
+    ═══════════════════════════════ -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="bi bi-globe2"></i>
+            <span>RPR Trades</span>
+        </div>
+
+        <ul class="menu">
+            <li><a th:href="@{/dashboard/admin}" class="active">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a></li>
+            <li><a th:href="@{/admin/users}">
+                <i class="bi bi-people"></i> Users
+            </a></li>
+            <li><a th:href="@{/products/pending}">
+                <i class="bi bi-box-seam"></i> Product Approvals
+            </a></li>
+            <li><a th:href="@{/admin/orders}">
+                <i class="bi bi-cart3"></i> All Orders
+            </a></li>
+            <li><a th:href="@{/admin/payments}">
+                <i class="bi bi-credit-card"></i> Payments
+            </a></li>
+            <li><a th:href="@{/admin/shipments}">
+                <i class="bi bi-truck"></i> Shipments
+            </a></li>
+            <li><a th:href="@{/admin/documents}">
+                <i class="bi bi-file-earmark-text"></i> Documents
+            </a></li>
+            <li><a th:href="@{/admin/invoices}">
+                <i class="bi bi-receipt"></i> Invoices
+            </a></li>
+            <li><a th:href="@{/admin/reports}">
+                <i class="bi bi-bar-chart-line"></i> Reports
+            </a></li>
+            <li><a th:href="@{/admin/monitoring}">
+                <i class="bi bi-shield-check"></i> Monitoring
+            </a></li>
+            <li><a href="#" onclick="logout()">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a></li>
+        </ul>
+    </aside>
+
+    <!-- ═══════════════════════════════
+         MAIN CONTENT
+    ═══════════════════════════════ -->
+    <main class="main-content">
+
+        <!-- Topbar -->
+        <nav class="topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light d-lg-none" id="menuToggle">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
+                <div>
+                    <h4 class="fw-bold mb-0">Admin Dashboard</h4>
+                    <small class="text-muted">System Overview &amp; Monitoring</small>
+                </div>
+            </div>
+            <div class="top-right">
+                <div class="notification" title="Notifications">
+                    <i class="bi bi-bell-fill"></i>
+                </div>
+                <div class="profile">
+                    <img id="avatarImg"
+                         src="https://ui-avatars.com/api/?background=d97706&color=fff&name=Admin"
+                         class="rounded-circle" width="46" height="46">
+                    <div>
+                        <strong id="adminName">Admin</strong>
+                        <span class="admin-badge ms-1">Admin</span><br>
+                        <small id="adminEmail" class="text-muted"></small>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Welcome Banner -->
+        <div class="welcome-banner mt-0">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <span class="welcome-tag"><i class="bi bi-shield-fill-check me-1"></i>Administrator</span>
+                    <h2 class="mt-3 fw-bold">Welcome, <span id="welcomeName">Admin</span></h2>
+                    <p class="text-light mt-2 mb-4">
+                        Monitor all platform activity — users, products, orders, payments, shipments, and documents from one unified dashboard.
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="mini-card">
+                                <i class="bi bi-people-fill"></i>
+                                <div><small>Total Users</small><h5 id="miniUsers">—</h5></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mini-card">
+                                <i class="bi bi-cart-check-fill"></i>
+                                <div><small>Total Orders</small><h5 id="miniOrders">—</h5></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mini-card">
+                                <i class="bi bi-currency-rupee"></i>
+                                <div><small>Revenue</small><h5 id="miniRevenue">—</h5></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center d-none d-lg-block">
+                    <i class="bi bi-shield-lock-fill hero-icon"></i>
+                    <div class="today-box mt-3">
+                        <i class="bi bi-calendar-event"></i>
+                        <span id="todayDate"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-4 mt-3">
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-card stat-gradient-1">
+                    <div>
+                        <h6>Total Users</h6>
+                        <h2 id="usersCount"><span class="spinner-border spinner-border-sm"></span></h2>
+                    </div>
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-card stat-gradient-2">
+                    <div>
+                        <h6>Products</h6>
+                        <h2 id="productsCount"><span class="spinner-border spinner-border-sm"></span></h2>
+                    </div>
+                    <i class="bi bi-box-seam-fill"></i>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-card stat-gradient-3">
+                    <div>
+                        <h6>Total Orders</h6>
+                        <h2 id="ordersCount"><span class="spinner-border spinner-border-sm"></span></h2>
+                    </div>
+                    <i class="bi bi-cart-check-fill"></i>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-card stat-gradient-4">
+                    <div>
+                        <h6>Revenue</h6>
+                        <h2 id="revenue"><span class="spinner-border spinner-border-sm"></span></h2>
+                    </div>
+                    <i class="bi bi-currency-rupee"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section-header mt-5">
+            <h4>Quick Actions</h4>
+        </div>
+        <div class="row g-3">
+            <div class="col-lg-3 col-md-6">
+                <a th:href="@{/admin/users}" class="text-decoration-none">
+                    <div class="action-card">
+                        <div class="action-icon bg-primary"><i class="bi bi-people-fill"></i></div>
+                        <h6>Manage Users</h6>
+                        <p>Enable / disable importer &amp; exporter accounts.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <a th:href="@{/products/pending}" class="text-decoration-none">
+                    <div class="action-card">
+                        <div class="action-icon bg-success"><i class="bi bi-box-fill"></i></div>
+                        <h6>Product Approvals</h6>
+                        <p>Review and approve pending exporter products.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <a th:href="@{/admin/orders}" class="text-decoration-none">
+                    <div class="action-card">
+                        <div class="action-icon bg-warning"><i class="bi bi-cart-fill"></i></div>
+                        <h6>All Orders</h6>
+                        <p>Monitor all orders across the platform.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <a th:href="@{/admin/reports}" class="text-decoration-none">
+                    <div class="action-card">
+                        <div class="action-icon bg-danger"><i class="bi bi-bar-chart-fill"></i></div>
+                        <h6>Reports</h6>
+                        <p>View revenue, product, and shipment reports.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Orders + Pending Products -->
+        <div class="row mt-5">
+            <div class="col-lg-8 mb-4">
+                <div class="card dashboard-table">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-cart3 me-2 text-primary"></i>Recent Orders</h5>
+                        <a th:href="@{/admin/orders}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Importer</th>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentOrders">
+                                <tr><td colspan="5" class="text-center py-4">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>Loading...
+                                </td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 mb-4">
+                <div class="card dashboard-table h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-hourglass-split me-2 text-warning"></i>Pending Products</h5>
+                        <a th:href="@{/products/pending}" class="btn btn-sm btn-outline-warning">Review</a>
+                    </div>
+                    <div class="card-body p-3" id="pendingProducts">
+                        <div class="text-center py-3">
+                            <span class="spinner-border spinner-border-sm me-2"></span>Loading...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipments + Payments -->
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card dashboard-table">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-truck me-2 text-danger"></i>Shipment Status</h5>
+                        <a th:href="@{/admin/shipments}" class="btn btn-sm btn-outline-danger">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr><th>Tracking</th><th>Location</th><th>Status</th></tr>
+                            </thead>
+                            <tbody id="shipmentTable">
+                                <tr><td colspan="3" class="text-center py-4">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>Loading...
+                                </td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 mb-4">
+                <div class="card dashboard-table">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-credit-card-fill me-2 text-success"></i>Recent Payments</h5>
+                        <a th:href="@{/admin/payments}" class="btn btn-sm btn-outline-success">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr><th>ID</th><th>Amount</th><th>Method</th><th>Status</th></tr>
+                            </thead>
+                            <tbody id="paymentTable">
+                                <tr><td colspan="4" class="text-center py-4">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>Loading...
+                                </td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Stats Row -->
+        <div class="row g-4 mt-1">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center p-4">
+                    <i class="bi bi-person-check-fill display-5 text-primary mb-2"></i>
+                    <h3 id="activeUsers">—</h3>
+                    <p class="text-muted mb-0">Active Users</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center p-4">
+                    <i class="bi bi-box-fill display-5 text-success mb-2"></i>
+                    <h3 id="approvedProducts">—</h3>
+                    <p class="text-muted mb-0">Approved Products</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center p-4">
+                    <i class="bi bi-truck display-5 text-warning mb-2"></i>
+                    <h3 id="inTransit">—</h3>
+                    <p class="text-muted mb-0">In Transit</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center p-4">
+                    <i class="bi bi-check-circle-fill display-5 text-danger mb-2"></i>
+                    <h3 id="completedOrders">—</h3>
+                    <p class="text-muted mb-0">Completed Orders</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="dashboard-footer mt-5">
+            <hr>
+            <div class="row">
+                <div class="col-md-6"><strong>© 2026 RPR Trades</strong><br><small class="text-muted">Import &amp; Export Management System</small></div>
+                <div class="col-md-6 text-md-end mt-2 mt-md-0"><small class="text-muted">Admin Portal v1.0</small></div>
+            </div>
+        </footer>
+
+    </main>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/toast.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/auth-guard.js}"></script>
+
+<script>
+(function () {
+    'use strict';
+
+    // ── Greet ─────────────────────────────────────────────────────────────────
+    const name  = getName();
+    const email = getEmail();
+
+    document.getElementById('adminName').textContent    = name;
+    document.getElementById('welcomeName').textContent  = name;
+    if (email) document.getElementById('adminEmail').textContent = email;
+    document.getElementById('avatarImg').src =
+        'https://ui-avatars.com/api/?background=d97706&color=fff&name=' + encodeURIComponent(name);
+    document.getElementById('todayDate').textContent = todayString();
+
+    // ── Status badge ──────────────────────────────────────────────────────────
+    // statusBadge() is defined in app.js
+
+    // ── Helper: safe text ─────────────────────────────────────────────────────
+    function s(v, fb = '—') { return (v !== null && v !== undefined && v !== '') ? v : fb; }
+
+    // ── Load report stats ──────────────────────────────────────────────────────
+    apiFetch('/api/reports')
+        .then(data => {
+            document.getElementById('productsCount').textContent = s(data.totalProducts, 0);
+            document.getElementById('ordersCount').textContent   = s(data.totalOrders, 0);
+            document.getElementById('revenue').textContent       = '₹ ' + s(data.totalRevenue, 0);
+            document.getElementById('miniOrders').textContent    = s(data.totalOrders, 0);
+            document.getElementById('miniRevenue').textContent   = '₹ ' + s(data.totalRevenue, 0);
+        })
+        .catch(() => {
+            ['productsCount','ordersCount','revenue'].forEach(id => {
+                document.getElementById(id).textContent = '—';
+            });
+        });
+
+    // ── Load users ────────────────────────────────────────────────────────────
+    apiFetch('/api/users')
+        .then(users => {
+            const count  = users.length;
+            const active = users.filter(u => u.enabled).length;
+            document.getElementById('usersCount').textContent   = count;
+            document.getElementById('activeUsers').textContent  = active;
+            document.getElementById('miniUsers').textContent    = count;
+        })
+        .catch(err => {
+            document.getElementById('usersCount').textContent  = '—';
+            document.getElementById('activeUsers').textContent = '—';
+            Toast.show('Could not load users: ' + err.message, 'warning');
+        });
+
+    // ── Load orders ───────────────────────────────────────────────────────────
+    apiFetch('/api/orders')
+        .then(orders => {
+            const tb = document.getElementById('recentOrders');
+            const completed = orders.filter(o => o.status === 'APPROVED' || o.status === 'SHIPPED').length;
+            document.getElementById('completedOrders').textContent = completed;
+            tb.innerHTML = '';
+            if (!orders.length) {
+                tb.innerHTML = '<tr class="empty-row"><td colspan="5" class="text-center py-4">No orders yet.</td></tr>';
+                return;
+            }
+            orders.slice(0, 6).forEach(o => {
+                tb.innerHTML += `
+                <tr>
+                    <td><strong>#${o.orderId}</strong></td>
+                    <td>${s(o.importer?.name)}</td>
+                    <td>${s(o.product?.productName)}</td>
+                    <td>${s(o.quantity)}</td>
+                    <td>${statusBadge(o.status)}</td>
+                </tr>`;
+            });
+        })
+        .catch(err => {
+            document.getElementById('recentOrders').innerHTML =
+                `<tr class="error-row"><td colspan="5" class="text-center py-4"><i class="bi bi-exclamation-triangle me-1"></i>${err.message}</td></tr>`;
+        });
+
+    // ── Load pending products ─────────────────────────────────────────────────
+    apiFetch('/api/products/pending')
+        .then(products => {
+            const div = document.getElementById('pendingProducts');
+            document.getElementById('approvedProducts').textContent = products.length;
+            if (!products.length) {
+                div.innerHTML = '<p class="text-muted text-center py-3 mb-0">No pending products.</p>';
+                return;
+            }
+            div.innerHTML = '';
+            products.slice(0, 5).forEach(p => {
+                div.innerHTML += `
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div>
+                        <strong class="d-block">${s(p.productName)}</strong>
+                        <small class="text-muted">${s(p.category)}</small>
+                    </div>
+                    ${statusBadge('PENDING')}
+                </div>`;
+            });
+            if (products.length > 5) {
+                div.innerHTML += `<p class="text-muted text-center mt-2 mb-0 small">+${products.length - 5} more</p>`;
+            }
+        })
+        .catch(() => {
+            document.getElementById('pendingProducts').innerHTML =
+                '<p class="text-danger small py-2 mb-0">Could not load products.</p>';
+        });
+
+    // ── Load shipments ────────────────────────────────────────────────────────
+    apiFetch('/api/shipments')
+        .then(shipments => {
+            const tb       = document.getElementById('shipmentTable');
+            const inTransit = shipments.filter(s => s.status === 'IN_TRANSIT').length;
+            document.getElementById('inTransit').textContent = inTransit;
+            tb.innerHTML = '';
+            if (!shipments.length) {
+                tb.innerHTML = '<tr class="empty-row"><td colspan="3" class="text-center py-4">No shipments yet.</td></tr>';
+                return;
+            }
+            shipments.slice(0, 5).forEach(ship => {
+                tb.innerHTML += `
+                <tr>
+                    <td><code>${s(ship.trackingNumber)}</code></td>
+                    <td>${s(ship.currentLocation)}</td>
+                    <td>${statusBadge(ship.status)}</td>
+                </tr>`;
+            });
+        })
+        .catch(err => {
+            document.getElementById('shipmentTable').innerHTML =
+                `<tr class="error-row"><td colspan="3" class="text-center py-4">${err.message}</td></tr>`;
+        });
+
+    // ── Load payments ─────────────────────────────────────────────────────────
+    apiFetch('/api/payments')
+        .then(payments => {
+            const tb = document.getElementById('paymentTable');
+            tb.innerHTML = '';
+            if (!payments.length) {
+                tb.innerHTML = '<tr class="empty-row"><td colspan="4" class="text-center py-4">No payments yet.</td></tr>';
+                return;
+            }
+            payments.slice(0, 5).forEach(p => {
+                tb.innerHTML += `
+                <tr>
+                    <td>#${s(p.paymentId)}</td>
+                    <td class="fw-semibold">₹ ${s(p.amount)}</td>
+                    <td><small>${s(p.paymentMethod)}</small></td>
+                    <td>${statusBadge(p.status)}</td>
+                </tr>`;
+            });
+        })
+        .catch(err => {
+            document.getElementById('paymentTable').innerHTML =
+                `<tr class="error-row"><td colspan="4" class="text-center py-4">${err.message}</td></tr>`;
+        });
+
+    // ── Sidebar toggle ────────────────────────────────────────────────────────
+    initSidebar();
+
+})();
+</script>
+
+</body>
+</html>

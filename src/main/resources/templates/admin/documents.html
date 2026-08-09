@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document Management | RPR Trades</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+<style>
+
+body{
+    background:#f5f7fb;
+}
+
+.page-header{
+    background:linear-gradient(135deg,#0d6efd,#4f8dff);
+    color:#fff;
+    padding:30px;
+    border-radius:15px;
+    margin-bottom:25px;
+}
+
+.card-box{
+    border:none;
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+.upload-box{
+    border:2px dashed #0d6efd;
+    border-radius:15px;
+    padding:40px;
+    text-align:center;
+    background:#fff;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.upload-box:hover{
+    background:#eef5ff;
+}
+
+.upload-box i{
+    font-size:50px;
+    color:#0d6efd;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container-fluid p-4">
+
+<div class="page-header d-flex justify-content-between align-items-center">
+
+<div>
+
+<h2>
+<i class="bi bi-file-earmark-arrow-up-fill"></i>
+Document Management
+</h2>
+
+<p class="mb-0">
+Upload and manage import/export documents.
+</p>
+
+</div>
+
+<a th:href="@{/dashboard/admin}" class="btn btn-light">
+<i class="bi bi-arrow-left"></i>
+Dashboard
+</a>
+
+</div>
+
+<div class="row">
+
+<div class="col-lg-4 mb-4">
+
+<div class="card card-box">
+
+<div class="card-body">
+
+<h5 class="mb-4">Upload Document</h5>
+
+<form id="uploadForm">
+
+<div class="upload-box">
+
+<i class="bi bi-cloud-arrow-up-fill"></i>
+
+<h5 class="mt-3">
+Choose Document
+</h5>
+
+<input
+type="file"
+id="documentFile"
+class="form-control mt-3"
+required>
+
+</div>
+
+<div class="d-grid mt-4">
+
+<button
+type="submit"
+class="btn btn-primary">
+
+<i class="bi bi-upload"></i>
+
+Upload
+
+</button>
+
+</div>
+
+</form>
+
+<div id="message" class="mt-3"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-lg-8">
+
+<div class="card card-box">
+
+<div class="card-body">
+
+<div class="row mb-3">
+
+<div class="col-md-6">
+
+<input
+type="text"
+id="searchDocument"
+class="form-control"
+placeholder="Search Document">
+
+</div>
+
+<div class="col-md-3">
+
+<button
+class="btn btn-primary w-100"
+onclick="loadDocuments()">
+
+Search
+
+</button>
+
+</div>
+
+<div class="col-md-3">
+
+<button
+class="btn btn-secondary w-100"
+onclick="resetSearch()">
+
+Reset
+
+</button>
+
+</div>
+
+</div>
+
+<div class="table-responsive">
+
+<table class="table table-hover align-middle">
+
+<thead class="table-light">
+
+<tr>
+
+<th>ID</th>
+<th>File Name</th>
+<th>Type</th>
+<th>Size</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="documentTable">
+
+<tr>
+
+<td colspan="5" class="text-center">
+
+Loading Documents...
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Continue Part 2 -->
+ <div id="loading" class="text-center mt-4" style="display:none;">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Loading Documents...</p>
+</div>
+
+<nav class="mt-4">
+    <ul class="pagination justify-content-center" id="pagination"></ul>
+</nav>
+
+<footer class="text-center mt-5">
+    <hr>
+    <p class="text-muted">© 2026 RPR Trades | Document Management</p>
+</footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/toast.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/auth-guard.js}"></script>
+
+<script>
+
+const API="/api";
+const token=sessionStorage.getItem("token");
+
+const headers={
+    "Authorization":"Bearer "+token
+};
+
+let documents=[];
+
+async function loadDocuments(){
+
+    document.getElementById("loading").style.display="block";
+
+    try{
+
+        const response=await fetch(API+"/documents",{
+            headers
+        });
+
+        documents=await response.json();
+
+        renderDocuments(documents);
+
+    }catch(e){
+
+        Toast.show("Unable to load documents.", "danger");
+
+    }
+
+    document.getElementById("loading").style.display="none";
+
+}
+
+function renderDocuments(data){
+
+    const table=document.getElementById("documentTable");
+
+    table.innerHTML="";
+
+    if(data.length===0){
+
+        table.innerHTML=`
+        <tr>
+            <td colspan="5" class="text-center">
+                No Documents Found
+            </td>
+        </tr>`;
+
+        return;
+
+    }
+
+    data.forEach(doc=>{
+
+        const size=((doc.data?.length||0)/1024).toFixed(2);
+
+        table.innerHTML+=`
+
+        <tr>
+
+            <td>${doc.id}</td>
+
+            <td>${doc.fileName}</td>
+
+            <td>${doc.fileType}</td>
+
+            <td>${size} KB</td>
+
+            <td>
+
+                <a
+                    href="${API}/documents/download/${doc.id}"
+                    class="btn btn-primary btn-sm">
+
+                    <i class="bi bi-download"></i>
+
+                </a>
+
+                <button
+                    class="btn btn-danger btn-sm"
+                    onclick="deleteDocument(${doc.id})">
+
+                    <i class="bi bi-trash"></i>
+
+                </button>
+
+            </td>
+
+        </tr>
+
+        `;
+
+    });
+
+}
+
+document.getElementById("searchDocument")
+.addEventListener("keyup",function(){
+
+    const value=this.value.toLowerCase();
+
+    renderDocuments(
+
+        documents.filter(doc=>
+
+            doc.fileName.toLowerCase().includes(value)
+
+        )
+
+    );
+
+});
+
+function resetSearch(){
+
+    document.getElementById("searchDocument").value="";
+
+    renderDocuments(documents);
+
+}
+
+document.getElementById("uploadForm")
+.addEventListener("submit",uploadDocument);
+
+</script>
+
+<!-- Continue Part 3 -->
+ <script>
+
+async function uploadDocument(e){
+
+    e.preventDefault();
+
+    const file=document.getElementById("documentFile").files[0];
+
+    if(!file){
+        showMessage("Please select a document.","danger");
+        return;
+    }
+
+    const formData=new FormData();
+    formData.append("file",file);
+
+    document.getElementById("loading").style.display="block";
+
+    try{
+
+        const response=await fetch(API+"/documents/upload",{
+            method:"POST",
+            headers:{
+                "Authorization":"Bearer "+token
+            },
+            body:formData
+        });
+
+        document.getElementById("loading").style.display="none";
+
+        if(response.ok){
+
+            showMessage("Document uploaded successfully.","success");
+
+            document.getElementById("uploadForm").reset();
+
+            loadDocuments();
+
+        }else{
+
+            const error=await response.text();
+
+            showMessage(error,"danger");
+
+        }
+
+    }catch(e){
+
+        document.getElementById("loading").style.display="none";
+
+        showMessage("Server Error.","danger");
+
+    }
+
+}
+
+async function deleteDocument(id){
+
+    Toast.confirm("Delete this document? This cannot be undone.", async () => {
+        try{
+            const response=await fetch(API+"/documents/"+id,{
+                method:"DELETE", headers
+            });
+            if(response.ok){
+                Toast.show("Document deleted successfully.", "success");
+                loadDocuments();
+            }else{
+                Toast.show("Unable to delete document.", "danger");
+            }
+        }catch(e){
+            Toast.show("Server error.", "danger");
+        }
+    }, null, { confirmText: "Delete", title: "Delete Document" });
+
+}
+
+function showMessage(message,type){
+
+    document.getElementById("message").innerHTML=
+    `<div class="alert alert-${type} alert-dismissible fade show">
+        ${message}
+        <button class="btn-close" data-bs-dismiss="alert"></button>
+    </div>`;
+
+}
+
+function buildPagination(){
+
+    document.getElementById("pagination").innerHTML=`
+    <li class="page-item active">
+        <a class="page-link" href="#">1</a>
+    </li>`;
+
+}
+
+loadDocuments();
+buildPagination();
+
+</script>
+
+</body>
+</html>

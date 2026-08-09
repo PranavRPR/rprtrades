@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports | RPR Trades</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js" rel="stylesheet">
+<link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+<style>
+
+body{
+    background:#f4f7fc;
+}
+
+.page-header{
+    background:linear-gradient(135deg,#0d6efd,#4b8cff);
+    color:#fff;
+    padding:30px;
+    border-radius:15px;
+    margin-bottom:25px;
+}
+
+.report-card{
+    border:none;
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.report-card:hover{
+    transform:translateY(-5px);
+}
+
+.stat-card{
+    color:#fff;
+    border-radius:15px;
+    padding:25px;
+    text-align:center;
+}
+
+.stat-card h3{
+    font-weight:700;
+}
+
+.chart-card{
+    border:none;
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container-fluid p-4">
+
+<div class="page-header d-flex justify-content-between align-items-center">
+
+<div>
+
+<h2>
+<i class="bi bi-bar-chart-fill"></i>
+Analytics & Reports
+</h2>
+
+<p class="mb-0">
+Business statistics of RPR Trades
+</p>
+
+</div>
+
+<a th:href="@{/dashboard/admin}" class="btn btn-light">
+
+<i class="bi bi-arrow-left"></i>
+
+Dashboard
+
+</a>
+
+</div>
+
+<div class="row">
+
+<div class="col-lg-3 col-md-6 mb-4">
+
+<div class="stat-card bg-primary">
+
+<h6>Total Orders</h6>
+
+<h3 id="totalOrders">0</h3>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6 mb-4">
+
+<div class="stat-card bg-success">
+
+<h6>Total Revenue</h6>
+
+<h3 id="totalRevenue">₹0</h3>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6 mb-4">
+
+<div class="stat-card bg-warning">
+
+<h6>Total Products</h6>
+
+<h3 id="totalProducts">0</h3>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6 mb-4">
+
+<div class="stat-card bg-danger">
+
+<h6>Total Shipments</h6>
+
+<h3 id="totalShipments">0</h3>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col-lg-6 mb-4">
+
+<div class="card chart-card">
+
+<div class="card-header">
+
+<h5 class="mb-0">
+
+Revenue Overview
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<canvas id="revenueChart"></canvas>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-lg-6 mb-4">
+
+<div class="card chart-card">
+
+<div class="card-header">
+
+<h5 class="mb-0">
+
+Business Statistics
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<canvas id="businessChart"></canvas>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card report-card">
+
+<div class="card-header d-flex justify-content-between align-items-center">
+
+<h5 class="mb-0">
+
+System Summary
+
+</h5>
+
+<div>
+
+<button class="btn btn-success btn-sm">
+<i class="bi bi-file-earmark-excel"></i>
+Excel
+</button>
+
+<button class="btn btn-danger btn-sm">
+<i class="bi bi-file-earmark-pdf"></i>
+PDF
+</button>
+
+</div>
+
+</div>
+
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead class="table-light">
+
+<tr>
+
+<th>Module</th>
+<th>Total</th>
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>Orders</td>
+
+<td id="tblOrders">0</td>
+
+<td>
+<span class="badge bg-success">
+Active
+</span>
+</td>
+
+</tr>
+
+<tr>
+
+<td>Products</td>
+
+<td id="tblProducts">0</td>
+
+<td>
+<span class="badge bg-success">
+Active
+</span>
+</td>
+
+</tr>
+
+<tr>
+
+<td>Shipments</td>
+
+<td id="tblShipments">0</td>
+
+<td>
+<span class="badge bg-success">
+Active
+</span>
+</td>
+
+</tr>
+
+<tr>
+
+<td>Revenue</td>
+
+<td id="tblRevenue">₹0</td>
+
+<td>
+<span class="badge bg-primary">
+Updated
+</span>
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- Continue Part 2 -->
+ <div id="loading" class="text-center mt-4" style="display:none;">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Loading Reports...</p>
+</div>
+
+<footer class="text-center mt-5">
+    <hr>
+    <p class="text-muted">© 2026 RPR Trades | Reports</p>
+</footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script th:src="@{/js/toast.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/auth-guard.js}"></script>
+
+<script>
+
+const API="/api";
+const token=sessionStorage.getItem("token");
+
+const headers={
+    "Authorization":"Bearer "+token,
+    "Content-Type":"application/json"
+};
+
+let revenueChart;
+let businessChart;
+
+async function loadReport(){
+
+    document.getElementById("loading").style.display="block";
+
+    try{
+
+        const response=await fetch(API+"/reports",{
+            headers
+        });
+
+        const report=await response.json();
+
+        document.getElementById("totalOrders").innerHTML=report.totalOrders;
+        document.getElementById("totalRevenue").innerHTML="₹ "+report.totalRevenue;
+        document.getElementById("totalProducts").innerHTML=report.totalProducts;
+        document.getElementById("totalShipments").innerHTML=report.totalShipments;
+
+        document.getElementById("tblOrders").innerHTML=report.totalOrders;
+        document.getElementById("tblProducts").innerHTML=report.totalProducts;
+        document.getElementById("tblShipments").innerHTML=report.totalShipments;
+        document.getElementById("tblRevenue").innerHTML="₹ "+report.totalRevenue;
+
+        drawRevenueChart(report);
+        drawBusinessChart(report);
+
+    }catch(e){
+
+        Toast.show("Unable to load reports.", "danger");
+
+    }
+
+    document.getElementById("loading").style.display="none";
+
+}
+
+function drawRevenueChart(report){
+
+    if(revenueChart){
+        revenueChart.destroy();
+    }
+
+    revenueChart=new Chart(
+
+        document.getElementById("revenueChart"),
+
+        {
+            type:"bar",
+
+            data:{
+                labels:["Revenue"],
+                datasets:[{
+                    label:"Revenue",
+                    data:[report.totalRevenue]
+                }]
+            },
+
+            options:{
+                responsive:true,
+                maintainAspectRatio:false
+            }
+
+        }
+
+    );
+
+}
+
+function drawBusinessChart(report){
+
+    if(businessChart){
+        businessChart.destroy();
+    }
+
+    businessChart=new Chart(
+
+        document.getElementById("businessChart"),
+
+        {
+            type:"doughnut",
+
+            data:{
+                labels:[
+                    "Orders",
+                    "Products",
+                    "Shipments"
+                ],
+
+                datasets:[{
+
+                    data:[
+                        report.totalOrders,
+                        report.totalProducts,
+                        report.totalShipments
+                    ]
+
+                }]
+            },
+
+            options:{
+                responsive:true,
+                maintainAspectRatio:false
+            }
+
+        }
+
+    );
+
+}
+
+</script>
+
+<!-- Continue Part 3 -->
+ <script>
+
+function exportExcel(){
+
+    Toast.show("Excel export will be available after backend implementation.", "info");
+
+}
+
+function exportPDF(){
+
+    window.print();
+
+}
+
+document.querySelector(".btn-success")
+.addEventListener("click",exportExcel);
+
+document.querySelector(".btn-danger")
+.addEventListener("click",exportPDF);
+
+window.addEventListener("load",loadReport);
+
+</script>
+
+</body>
+</html>
