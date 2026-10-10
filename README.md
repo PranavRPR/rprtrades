@@ -1,134 +1,215 @@
 <!-- ============================================= -->
-<!--           RPR TRADES - PREMIUM README          -->
+<!--        🚀 RPR TRADES - PREMIUM README         -->
 <!-- ============================================= -->
 
-<div align="center">
+<h1 align="center">🌍 RPR TRADES</h1>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d6efd,100:6610f2&height=200&section=header&text=RPR%20TRADES&fontSize=70&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Import%20%26%20Export%20Marketplace%20%26%20Trade%20Management%20Platform&descAlignY=58&descSize=18" width="100%" />
+<h3 align="center">Import & Export Marketplace • Trade Management Platform</h3>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 21" />
-  <img src="https://img.shields.io/badge/Spring_Boot-3.5.3-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot" />
-  <img src="https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Thymeleaf-3.1-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white" alt="Thymeleaf" />
-  <img src="https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white" alt="Bootstrap" />
-  <img src="https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
+  <em>Connecting importers and exporters through a streamlined, secure, and role-based business workflow.</em>
+</p>
+
+<br>
+
+<p align="center">
+  <a href="#-features"><img src="https://img.shields.io/badge/✨_Features-0d6efd?style=for-the-badge" /></a>
+  <a href="#-screenshots"><img src="https://img.shields.io/badge/📸_Screenshots-6610f2?style=for-the-badge" /></a>
+  <a href="#-getting-started"><img src="https://img.shields.io/badge/🚀_Get_Started-198754?style=for-the-badge" /></a>
+  <a href="#-api-reference"><img src="https://img.shields.io/badge/📡_API_Docs-dc3545?style=for-the-badge" /></a>
+</p>
+
+<br>
+
+<!-- Tech Stack Badges -->
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" />
+  <img src="https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Thymeleaf-3.1-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white" />
+  <img src="https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white" />
+  <img src="https://img.shields.io/badge/JWT-Secure-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Active_Development-success?style=flat-square" />
+  <img src="https://img.shields.io/badge/Status-Active-success?style=flat-square" />
   <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square" />
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" />
   <img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=flat-square" />
+  <img src="https://img.shields.io/badge/Made_with-❤️_&_☕-red?style=flat-square" />
 </p>
 
-<h3>🌍 A Full-Stack Import/Export Marketplace for Modern Global Trade</h3>
-
-<p><i>Connecting importers and exporters through a streamlined, secure, and role-based business workflow.</i></p>
-
-</div>
-
 ---
 
-## 📖 Table of Contents
-
-- [About the Project](#-about-the-project)
-- [Features](#-features)
-- [Business Workflow](#-business-workflow)
-- [Tech Stack](#️-tech-stack)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [Administrator Account](#-administrator-account)
-- [Role-Based Authorization](#️-role-based-authorization)
-- [API Reference](#-api-reference)
-- [Screenshots](#️-screenshots)
-- [Testing Checklist](#-testing-checklist)
-- [Roadmap](#️-roadmap)
-- [Contributing](#-contributing)
-- [Security Notes](#-security-notes)
-- [License](#-license)
-- [Author](#-author)
-
----
-
-## 📌 About the Project
+## 📌 About The Project
 
 **RPR Trades** is a full-stack web application designed to digitize and streamline the import/export business workflow. It connects **importers** and **exporters** on a single platform, enabling seamless product discovery, order placement, payments, invoicing, and shipment tracking.
 
 Built with **Spring Boot**, **PostgreSQL**, and **Thymeleaf**, the platform uses **JWT-based authentication** and **role-based authorization** to ensure that each user — Importer, Exporter, or Admin — only accesses the operations permitted for their role.
 
-> 💡 **Why RPR Trades?**
-> Traditional import/export workflows are fragmented across emails, spreadsheets, and paper documents. RPR Trades brings everything together into one elegant, secure, and auditable digital platform.
+<br>
+
+<table>
+<tr>
+<td>
+
+### 💡 Why RPR Trades?
+
+Traditional import/export workflows are fragmented across emails, spreadsheets, and paper documents. 
+
+**RPR Trades brings everything together** into one elegant, secure, and auditable digital platform.
+
+</td>
+<td>
+
+### 🎯 Core Principles
+
+- 🔐 **Security First** — JWT + role-based access
+- 🎨 **Clean UX** — Bootstrap 5 responsive design
+- ⚡ **Performance** — Spring Boot 3.5 optimized
+- 📊 **Audit-Ready** — Complete activity tracking
+
+</td>
+</tr>
+</table>
+
+---
+
+## 📖 Table of Contents
+
+<div align="center">
+
+| 🚀 Project | ✨ Features | 📡 Reference |
+|:----------:|:----------:|:------------:|
+| [About](#-about-the-project) | [Importer](#-importer) | [API Reference](#-api-reference) |
+| [Screenshots](#️-screenshots) | [Exporter](#-exporter) | [Role Matrix](#️-role-based-authorization) |
+| [Getting Started](#-getting-started) | [Admin](#️-administrator) | [Security](#-security-notes) |
+| [Tech Stack](#️-tech-stack) | [Workflow](#-business-workflow) | [Contributing](#-contributing) |
+| [Structure](#-project-structure) | [Roadmap](#️-roadmap) | [License](#-license) |
+
+</div>
 
 ---
 
 ## ✨ Features
 
-### 👤 Importer
+<table>
+<tr>
+<th width="33%">👤 Importer</th>
+<th width="33%">🏭 Exporter</th>
+<th width="34%">🛡️ Administrator</th>
+</tr>
+<tr>
+<td valign="top">
 
-- ✅ Secure registration and login
-- 🔍 Browse and search approved products
-- 🛒 Place orders with exporters
-- 📋 View personal order history
-- 💳 Make payments for approved orders
-- 🧾 View invoices and payment status
-- 🚚 Track shipments in real time
+- ✅ Secure registration & login
+- 🔍 Browse & search products
+- 🛒 Place orders
+- 📋 Order history
+- 💳 Make payments
+- 🧾 View invoices
+- 🚚 Track shipments
 
-### 🏭 Exporter
+</td>
+<td valign="top">
 
-- ✅ Secure registration and login
-- 📦 Add, update, and manage products
-- 📤 Submit products for admin approval
-- 📥 View and manage incoming orders
-- ✔️ Approve or reject orders
+- ✅ Secure registration & login
+- 📦 Add & manage products
+- 📤 Submit for approval
+- 📥 View incoming orders
+- ✔️ Approve / reject orders
 - 🧾 Generate invoices
-- 🚚 Create and update shipments
-- 📊 Monitor products and business activity
+- 🚚 Manage shipments
 
-### 🛡️ Administrator
+</td>
+<td valign="top">
 
-- 🔐 Predefined admin account (no public registration)
-- 👥 Manage users and access control
-- 📦 Review and approve products
-- 🛒 Monitor all orders and payments
-- 🚚 Oversee shipments
-- 📊 Platform-wide reports and analytics
-- 📁 Document management
+- 🔐 Predefined admin account
+- 👥 Manage all users
+- 📦 Approve products
+- 🛒 Monitor orders
+- 💳 Oversee payments
+- 🚚 Track shipments
+- 📊 Platform analytics
 
-### 🎨 UI and Security
+</td>
+</tr>
+</table>
 
-| Feature | Description |
-|:-------:|:------------|
-| 🎭 **Role-Based Dashboards** | Separate UI for Importer, Exporter, and Admin |
-| 🔐 **JWT Authentication** | Stateless, secure token-based auth |
-| 🗂️ **Per-Tab Sessions** | Independent sessions using `sessionStorage` |
-| 🔔 **Toast Notifications** | Smooth in-app feedback (no annoying alerts) |
-| 📱 **Responsive Design** | Works beautifully on desktop, tablet, and mobile |
-| 🛡️ **Backend Authorization** | Every protected endpoint independently verified |
+### 🎨 UI & Security Highlights
+
+<table>
+<tr>
+<td>
+
+| 🎭 Feature | 📝 Description |
+|:----------:|:---------------|
+| Role-Based Dashboards | Separate UI per user role |
+| JWT Authentication | Stateless secure tokens |
+| Per-Tab Sessions | Independent tab logins |
+| Toast Notifications | Smooth in-app feedback |
+
+</td>
+<td>
+
+| 🎨 Feature | 📝 Description |
+|:----------:|:---------------|
+| Responsive Design | Desktop, tablet, mobile |
+| Backend Authorization | Every endpoint verified |
+| Password Encoding | BCrypt hashing |
+| Exception Handling | Global error management |
+
+</td>
+</tr>
+</table>
 
 ---
 
 ## 🔄 Business Workflow
 
+<div align="center">
+
 ```text
-    🏭 Exporter Registers / Logs In
-                  ↓
-            📦 Add Product
-                  ↓
-         🛡️ Admin Approval
-                  ↓
-          ✅ Product Available
-                  ↓
-       👤 Importer Places Order
-                  ↓
-      ✔️ Exporter Approves Order
-                  ↓
-         🧾 Invoice Generated
-                  ↓
-       💳 Importer Makes Payment
-                  ↓
-      🚚 Exporter Creates Shipment
-                  ↓
-      📍 Shipment Status Updates
-                  ↓
-         🎉 Delivery Completed
+╔══════════════════════════════════════════════════════════╗
+║                   🏭 EXPORTER WORKFLOW                   ║
+╚══════════════════════════════════════════════════════════╝
+
+    ┌─────────────────────┐
+    │  1. Register/Login  │
+    └──────────┬──────────┘
+               ▼
+    ┌─────────────────────┐
+    │  2. Add Product     │
+    └──────────┬──────────┘
+               ▼
+    ┌─────────────────────┐
+    │  3. Await Approval  │
+    └──────────┬──────────┘
+               ▼
+╔══════════════════════════════════════════════════════════╗
+║                    🛡️ ADMIN WORKFLOW                     ║
+╚══════════════════════════════════════════════════════════╝
+               ▼
+    ┌─────────────────────┐
+    │  4. Approve Product │
+    └──────────┬──────────┘
+               ▼
+╔══════════════════════════════════════════════════════════╗
+║                  👤 IMPORTER WORKFLOW                    ║
+╚══════════════════════════════════════════════════════════╝
+               ▼
+    ┌─────────────────────┐
+    │  5. Place Order     │
+    └──────────┬──────────┘
+               ▼
+    ┌─────────────────────┐
+    │  6. Make Payment    │
+    └──────────┬──────────┘
+               ▼
+    ┌─────────────────────┐
+    │  7. Track Shipment  │
+    └──────────┬──────────┘
+               ▼
+    ┌─────────────────────┐
+    │  8. 🎉 Delivered    │
+    └─────────────────────┘
