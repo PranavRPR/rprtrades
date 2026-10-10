@@ -39,8 +39,8 @@
   <a href="#-architecture"><b>Architecture</b></a> •
   <a href="#-getting-started"><b>Getting Started</b></a> •
   <a href="#-api-reference"><b>API</b></a> •
-  <a href="#-screenshots"><b>Screenshots</b></a> •
-  <a href="#-roadmap"><b>Roadmap</b></a>
+  <a href="#️-screenshots"><b>Screenshots</b></a> •
+  <a href="#️-roadmap"><b>Roadmap</b></a>
 </p>
 
 </div>
